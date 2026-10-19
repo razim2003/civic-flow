@@ -1,0 +1,25 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.supabase/
+supabase/.temp/
+.vercel/
+
+# Dependencies and generated output
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+.playwright-cli/
+output/
+tmp/
+*.log
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.idea/

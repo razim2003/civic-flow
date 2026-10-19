@@ -1,0 +1,27 @@
+name: Verify CivicFlow
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VITE_SUPABASE_URL: https://civicflow-test.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_placeholder_for_isolated_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run test:db
+      - run: npm run db:types
+      - run: git diff --exit-code -- src/shared/lib/supabase/database.types.ts
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e

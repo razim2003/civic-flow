@@ -1,0 +1,15 @@
+export function userMessage(error: unknown): string {
+  const code = typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : ''
+  if (code === 'invalid_credentials') return 'The email or password is incorrect. Please try again.'
+  if (code === 'email_not_confirmed') return 'Please verify your email before signing in.'
+  if (code === 'over_email_send_rate_limit' || code === 'over_request_rate_limit') return 'Too many attempts. Please wait a little before trying again.'
+  if (code === 'weak_password') return 'Choose a stronger password and try again.'
+  if (code === '42P01' || code === 'PGRST205' || code === 'PGRST202') return 'Account access is not ready yet. Please contact the project administrator.'
+  const message = error instanceof Error ? error.message : typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : ''
+  if (message.includes('last_administrator')) return 'At least one active administrator must remain.'
+  if (message.includes('unresolved_assignments')) return 'Reassign this officer’s open complaints before changing their access.'
+  if (message.includes('not_authorized')) return 'You do not have permission to perform this action.'
+  if (message.includes('invalid_input')) return 'Check the entered details and try again.'
+  if (message.includes('Failed to fetch') || message.includes('fetch failed') || message.includes('NetworkError')) return 'Unable to connect. Check your connection and try again.'
+  return 'We could not complete that request. Please try again or contact the project administrator.'
+}
