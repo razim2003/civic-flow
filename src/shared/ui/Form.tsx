@@ -12,8 +12,8 @@ export function Notice({ children, success = false }: { children: ReactNode; suc
   return <div className={`notice ${success ? 'notice-success' : ''}`} role={success ? 'status' : 'alert'}>{children}</div>
 }
 
-export function SubmitButton({ children, busy }: { children: ReactNode; busy: boolean }) {
-  return <button className="button button-primary" type="submit" disabled={busy}>{busy && <LoaderCircle size={17} className="spin" aria-hidden="true" />}{busy ? 'Please wait…' : children}</button>
+export function SubmitButton({ children, busy, disabled = false }: { children: ReactNode; busy: boolean; disabled?: boolean }) {
+  return <button className="button button-primary" type="submit" disabled={busy || disabled}>{busy && <LoaderCircle size={17} className="spin" aria-hidden="true" />}{busy ? 'Please wait…' : children}</button>
 }
 
 export function LoadingScreen() {

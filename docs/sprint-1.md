@@ -14,7 +14,7 @@ Implementation increment authorized by the user on 2026-10-19. Original ownershi
 
 ## Scope and traceability
 
-Primary requirements: CF-01, CF-02, CF-03, CF-14 and the profile part of CF-15. The source provides their implementation; real hosted acceptance is pending migration/settings/bootstrap, not claimed complete merely because mocked browser tests pass.
+Primary requirements: CF-01, CF-02, CF-03, CF-14 and the profile part of CF-15. The source provides their implementation. The initial hosted schema and existing-account profile repair were applied on 2026-10-19, with authenticated profile-read verification. Actual browser login and separately authorized Administrator bootstrap remain separate acceptance steps; mocked browser tests alone do not prove them.
 
 Complaint submission, category administration, maps, evidence storage, assignment, status changes, notifications, resolution and feedback remain later increments. No sample complaint totals, dummy user-role selector or fake completed workflow is shown in the live product.
 
@@ -24,8 +24,8 @@ Recorded checks for this increment: lint, TypeScript and production build pass; 
 
 Vitest covers input/configuration rules and Auth profile request races. PGlite replays both real migrations into a fresh PostgreSQL engine and tests actual role grants/RLS/RPC execution, with fixture `auth.users` and `auth.uid()`. Playwright intercepts Supabase responses and tests UI integration; it does not prove the hosted RLS configuration. The two suites provide complementary evidence.
 
-Full local Supabase integration, actual confirmation/recovery email flows, multi-connection concurrency, Vercel-hosted headers and remote migration acceptance remain pending. Docker's engine was unavailable during this increment. No hosted account, data or schema was modified by the automated tests.
+Full local Supabase integration, actual recovery email flows, multi-connection concurrency and Vercel-hosted headers remain pending. Docker's engine was initially unavailable; later image downloads stalled during hosted setup. Automated tests do not modify hosted accounts/data. The separately authorized hosted rollout and account repair are recorded in [hosted setup](hosted-setup-2026-10-19.md).
 
 ## Next increment
 
-Review and approve the specific hosted migration/setup package when ready; apply only through privileged approved tooling. Verify real signup/login and first-admin bootstrap afterward. Sprint 2 then adds complaint creation, categories, map coordinates and private evidence against the tested backend contracts.
+Verify real browser login with the repaired existing account; separately authorize the first-admin bootstrap when its account is identified. Sprint 2 then adds complaint creation, categories, map coordinates and private evidence against the tested backend contracts.

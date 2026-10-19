@@ -20,7 +20,9 @@ async function mockSupabase(page: Page, role = 'citizen', missingProfile = false
       const single = route.request().headers().accept?.includes('vnd.pgrst.object')
       return route.fulfill({ headers: { 'content-range': '0-0/1' }, json: missingProfile ? null : single ? profile : [profile] })
     }
-    if (url.pathname === '/rest/v1/departments') return route.fulfill({ json: [{ id: '10000000-0000-4000-8000-000000000001', name: 'Roads' }] })
+    if (url.pathname === '/rest/v1/departments') return route.fulfill({ json: [{ id: '10000000-0000-4000-8000-000000000001', name: 'Roads', is_active: true }] })
+    if (url.pathname === '/rest/v1/categories') return route.fulfill({ json: [] })
+    if (url.pathname === '/rest/v1/complaints') return route.fulfill({ headers: { 'content-range': '*/0' }, json: [] })
     if (url.pathname === '/rest/v1/rpc/update_my_profile') {
       profile.display_name = route.request().postDataJSON().p_display_name
       return route.fulfill({ json: profile })

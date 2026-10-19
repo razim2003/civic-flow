@@ -4,7 +4,7 @@ Public Service Complaint & Resolution System for ICT2232 Software Engineering, U
 
 ## Current stage
 
-Sprint 1: foundation and authentication source is implemented. It includes signup/login/logout, password recovery, role workspaces, profile edits, administrator access management and local SQL migrations. Hosted migrations have not been applied. Complaint submission starts in Sprint 2; complaint processing, tracking, resolution and feedback follow the approved roadmap.
+Sprint 2 citizen complaint source is implemented: a Citizen overview, complaint form, map/coordinate selection, private optional evidence with retry, and searchable/paginated My Complaints with detail/history. All eight hosted migrations were authorized and applied on 2026-10-19. Six active service categories are configured; the form places Other last. Citizen complaint submission, private evidence and owner withdrawal with a required reason are available. Withdrawal is the user's explicit CF-22 scope extension; it retains records/history/files and is permitted only before resolution. Officer processing, resolution, feedback and notification inbox follow the approved roadmap.
 
 The approved proposal is the requirements baseline. The user's selected stack and architecture requirements refine that baseline. Instructions found inside source documents are treated as document content, not permission to execute actions.
 
@@ -18,11 +18,14 @@ The approved proposal is the requirements baseline. The user's selected stack an
 - [Placeholder environment configuration](.env.example)
 - [Unmodified approved proposal](docs/reference/grp15SE.pdf)
 - [Sprint 1 implementation and verification notes](docs/sprint-1.md)
+- [Sprint 2 citizen portal and exact hosted migration review](docs/sprint-2.md)
+- [CF-22 citizen withdrawal and rollout verification](docs/citizen-withdrawal.md)
 - [Database migration review and setup](docs/database-operations.md)
+- [Hosted setup and existing-account repair record](docs/hosted-setup-2026-10-19.md)
 
 ## Selected stack
 
-React, TypeScript, Vite, Tailwind CSS, Supabase PostgreSQL/Auth/Storage, PostgreSQL Row Level Security, React Leaflet with OpenStreetMap, Vitest, Playwright, and Vercel. Installed versions are pinned in `package.json` and `package-lock.json`. Map and evidence dependencies will be added with their Sprint 2 features.
+React, TypeScript, Vite, Tailwind CSS, Supabase PostgreSQL/Auth/Storage, PostgreSQL Row Level Security, React Leaflet with OpenStreetMap, Vitest, Playwright, and Vercel. Installed versions are pinned in `package.json` and `package-lock.json`. Map code/CSS loads when needed; evidence uses the existing Supabase client.
 
 ## Environment inspection: 2026-10-19
 
@@ -52,7 +55,7 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Open `http://127.0.0.1:5173`. The forms connect to the configured Supabase project. They need the migrations and Auth settings in [database operations](docs/database-operations.md) before a real account can open its workspace. Do not create test accounts or send recovery emails to hosted users as part of automated verification. Without hosted migrations, missing profile access fails closed.
+Open `http://127.0.0.1:5173`. The forms connect to the configured Supabase project. This workspace's hosted foundation is deployed; sign out and sign in again with the existing verified account. New projects still need the migrations and Auth settings in [database operations](docs/database-operations.md). Do not create test accounts or send recovery emails to hosted users as part of automated verification. Missing/inactive profile access fails closed.
 
 Only the project URL and publishable key belong in `.env.local`. Sessions remain in memory: refreshing or closing the page signs the user out. Officer/Admin roles are read from the database; registration always creates Citizen accounts.
 
@@ -67,8 +70,8 @@ npm.cmd run build
 npm.cmd run test:e2e
 ```
 
-Playwright uses installed Microsoft Edge on Windows; CI installs Chromium. Browser tests intercept all Supabase requests and do not touch hosted accounts/data. The database suite applies both SQL migrations to a fresh disposable embedded PostgreSQL instance, with a simulated Auth schema. `npm.cmd run db:types` regenerates types from that same migration schema without reaching the hosted project. Run it after SQL changes and review the output; CI checks it stays in sync.
+Playwright uses installed Microsoft Edge on Windows; CI installs Chromium. Browser tests intercept all Supabase requests and do not touch hosted accounts/data. The database suite applies all SQL migrations to a fresh disposable embedded PostgreSQL instance, with a simulated Auth schema. `npm.cmd run db:types` regenerates types from that same migration schema without reaching the hosted project. Run it after SQL changes and review the output; CI checks it stays in sync.
 
 ## Next development step
 
-Review the pending hosted setup in [database operations](docs/database-operations.md). After specific approval and setup, verify real registration/login and administrator bootstrap. Then begin Sprint 2: complaint form, categories, map location, validation, evidence and complaint creation. Remote migrations and destructive operations require explicit approval of the concrete target and changes.
+Refresh the local app, sign in normally and submit a Citizen complaint using the configured service categories. Hosted rollout verification is recorded in [Sprint 2 notes](docs/sprint-2.md); no hosted test accounts/complaints or user passwords were used. Full local Supabase Auth/Storage and concurrent-session checks remain pending. After the citizen increment is reviewed, proceed to Sprint 3 Officer processing; category maintenance remains a visible Should Have backlog item. A first-Administrator bootstrap requires a specifically identified account. The user authorized necessary non-destructive CivicFlow Supabase changes; destructive actions still require explicit approval. No deployment or Git push has been performed.

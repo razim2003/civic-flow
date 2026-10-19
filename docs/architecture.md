@@ -52,6 +52,8 @@ docs/                         requirements, design and review evidence
 
 This is the target tree. Sprint 1 implements auth, profiles, admin access management and shared foundation; later feature directories are created only as their working increments arrive. Avoid empty files or abstract repository frameworks in advance of working features.
 
+Sprint 2 implements `complaints/`, `evidence/` and shared location controls. Complaint category/department reads currently live in the complaint data adapter and its models; a separate category-admin module will own future maintenance RPC/UI. Complaint pages compose only the public evidence interface. Shared resource hooks ignore late responses after a newer read/unmount; protected content unmounts on logout/account change. Background access checks on tab return preserve an active draft while still failing closed on a missing/inactive profile or failed profile read. No global query-state dependency is introduced.
+
 Each feature uses only the layers it needs:
 
 - `ui/`: React components and pages; render props/state, collect input, show loading/errors. No `.from()` or `.rpc()` calls.
@@ -87,6 +89,8 @@ Evidence is optional: first create the complaint, then reserve an evidence recor
 The officer queue is department-scoped and paginated. Assignment and priority use separate operations; review/start/resolve use an explicit transition function. Every mutation checks the live actor, locks relevant records, validates the expected complaint version, writes history and notification in the same transaction, and returns the new version. A stale client refetches instead of silently overwriting another officer's work.
 
 The citizen sees current state, progress timeline, resolution details/date and in-system notifications. Refetch after writes, navigation and window focus, with a manual refresh action. Realtime subscriptions, external email/SMS and push are unnecessary for the approved update behavior. Unread notifications are durable in PostgreSQL.
+
+CF-22 adds an owner-only withdrawal intent in the complaint feature, using a dedicated application hook/data RPC and reason/confirmation UI. The backend permits only unresolved source states, checks live ownership/role and the expected version, then atomically records final Withdrawn and its reason/history/update. Attached evidence and prior events remain available. Withdrawn is a final branch, not a fifth step after Resolved; uploads and future officer mutations must reject it. This is the user's explicit scope extension, detailed in [citizen withdrawal](citizen-withdrawal.md).
 
 Feedback becomes available only on the owner's resolved complaint. Admin category/user changes use dedicated use cases and audit records. Enhanced analytics remain a Could Have; required role workspaces are simple lists and counts.
 

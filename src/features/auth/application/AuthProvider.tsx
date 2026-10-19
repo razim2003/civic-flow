@@ -51,10 +51,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadProfile])
 
   useEffect(() => {
-    const refresh = () => { if (document.visibilityState === 'visible' && userRef.current) void refreshProfile() }
+    // Recheck access on return without unmounting an active complaint draft.
+    // A missing/inactive profile or failed read still clears access in loadProfile.
+    const refresh = () => {
+      if (document.visibilityState === 'visible' && userRef.current) void loadProfile(userRef.current, ++sequence.current)
+    }
     document.addEventListener('visibilitychange', refresh)
     return () => document.removeEventListener('visibilitychange', refresh)
-  }, [refreshProfile])
+  }, [loadProfile])
 
   const logout = useCallback(async () => {
     // Clear privileged UI even if a network logout fails.

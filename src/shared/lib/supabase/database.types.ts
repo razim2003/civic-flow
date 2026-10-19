@@ -45,6 +45,7 @@ export type Database = { public: {
         expires_at: string
         created_at: string
         attached_at: string | null
+        upload_request_id: string
       }
       Insert: never
       Update: never
@@ -82,6 +83,10 @@ export type Database = { public: {
         version: number
         created_at: string
         updated_at: string
+        submission_fingerprint: string | null
+        withdrawal_reason: string | null
+        withdrawn_at: string | null
+        withdrawn_by: string | null
       }
       Insert: never
       Update: never
@@ -137,14 +142,37 @@ export type Database = { public: {
       p_is_active: boolean
       p_display_name: string
     }; Returns: Database['public']['Tables']['profiles']['Row'][] }
+    finalize_evidence: { Args: {
+      p_evidence_id: string
+    }; Returns: Database['public']['Tables']['complaint_evidence']['Row'][] }
+    reserve_evidence: { Args: {
+      p_complaint_id: string
+      p_filename: string
+      p_content_type: string
+      p_size: number
+      p_request_id: string
+    }; Returns: Database['public']['Tables']['complaint_evidence']['Row'][] }
+    submit_complaint: { Args: {
+      p_category_id: string
+      p_description: string
+      p_location_text: string
+      p_latitude: number
+      p_longitude: number
+      p_request_id: string
+    }; Returns: Database['public']['Tables']['complaints']['Row'][] }
     update_my_profile: { Args: {
       p_display_name: string
     }; Returns: Database['public']['Tables']['profiles']['Row'][] }
+    withdraw_complaint: { Args: {
+      p_complaint_id: string
+      p_reason: string
+      p_expected_version: number
+    }; Returns: Database['public']['Tables']['complaints']['Row'][] }
   }
   Enums: {
     app_role: 'citizen' | 'officer' | 'administrator'
     complaint_priority: 'low' | 'normal' | 'high' | 'urgent'
-    complaint_status: 'submitted' | 'under_review' | 'in_progress' | 'resolved'
+    complaint_status: 'submitted' | 'under_review' | 'in_progress' | 'resolved' | 'withdrawn'
   }
   CompositeTypes: { [_ in never]: never }
 } }
