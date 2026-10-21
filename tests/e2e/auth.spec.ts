@@ -23,6 +23,7 @@ async function mockSupabase(page: Page, role = 'citizen', missingProfile = false
     if (url.pathname === '/rest/v1/departments') return route.fulfill({ json: [{ id: '10000000-0000-4000-8000-000000000001', name: 'Roads', is_active: true }] })
     if (url.pathname === '/rest/v1/categories') return route.fulfill({ json: [] })
     if (url.pathname === '/rest/v1/complaints') return route.fulfill({ headers: { 'content-range': '*/0' }, json: [] })
+    if (url.pathname === '/rest/v1/rpc/list_assignable_officers') return route.fulfill({ json: [] })
     if (url.pathname === '/rest/v1/rpc/update_my_profile') {
       profile.display_name = route.request().postDataJSON().p_display_name
       return route.fulfill({ json: profile })
@@ -45,8 +46,10 @@ async function login(page: Page) {
 test('protected URLs redirect to sign-in without a session', async ({ page }) => {
   await mockSupabase(page)
   await page.goto('/admin/users')
+  // Allow cold Vite compilation before checking the completed redirect.
+  await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible({ timeout: 15000 })
   await expect(page).toHaveURL(/\/login$/)
-  await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'User management', exact: true })).toHaveCount(0)
 })
 test('registration validates input and shows email verification without accepting a role', async ({ page }) => {
   await mockSupabase(page)
@@ -143,4 +146,73 @@ test('a valid recovery session can update its password and keep the success mess
   await page.getByRole('button', { name: 'Update password' }).click()
   await expect(page.getByRole('status')).toContainText('Your password has been updated.')
   await expect(page.getByRole('link', { name: 'Go to workspace' })).toBeVisible()
+})
+
+test('an invitation session sets its own password without changing its role', async ({ page }) => {
+  await mockSupabase(page)
+  await page.goto(`/accept-invite#access_token=${token()}&refresh_token=synthetic-refresh-token&expires_in=3600&token_type=bearer&type=invite`)
+  await expect(page.getByRole('heading', { name: 'Set up your account.' })).toBeVisible()
+  await page.getByLabel('New password', { exact: true }).fill('a-long-test-passphrase')
+  await page.getByLabel('Confirm new password').fill('a-long-test-passphrase')
+  const request = page.waitForRequest((request) => request.method() === 'PUT' && request.url().includes('/auth/v1/user'))
+  await page.getByRole('button', { name: 'Set password', exact: true }).click()
+  expect((await request).postDataJSON()).toEqual({ password: 'a-long-test-passphrase', code_challenge: null, code_challenge_method: null })
+  await expect(page.getByRole('status')).toContainText('Your password has been updated')
+  await page.getByRole('link', { name: 'Go to workspace' }).click()
+  await expect(page.getByText('Citizen workspace')).toBeVisible()
+})
+
+test('an expired invitation cannot submit a password', async ({ page }) => {
+  await mockSupabase(page)
+  await page.goto('/accept-invite')
+  await expect(page.getByRole('alert')).toContainText('invitation link is missing or has expired')
+  await expect(page.getByRole('button', { name: 'Set password', exact: true })).toHaveCount(0)
+})
+
+test('Administrator creates an Officer invitation with a department and no password or role selector', async ({ page }) => {
+  await mockSupabase(page, 'administrator')
+  const invitations: unknown[] = []
+  await page.route('https://*.supabase.co/functions/v1/provision-officer', async (route) => {
+    invitations.push(route.request().postDataJSON())
+    await route.fulfill({ json: { code: 'officer_invited', userId: 'invited-user' } })
+  })
+  await login(page)
+  await page.getByRole('link', { name: 'User management', exact: true }).click()
+  await page.getByRole('link', { name: 'Create Officer account' }).click()
+  await page.getByLabel('Officer full name').fill('Sample Officer')
+  await page.getByLabel('Officer email address').fill('officer@example.test')
+  await page.getByLabel('Department', { exact: true }).selectOption('10000000-0000-4000-8000-000000000001')
+  await expect(page.getByLabel('Password', { exact: true })).toHaveCount(0)
+  await expect(page.getByLabel('Account role')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Send Officer invitation' }).click()
+  await expect(page.getByRole('status')).toContainText('Officer account created and invitation sent')
+  expect(invitations).toEqual([{ displayName: 'Sample Officer', email: 'officer@example.test', departmentId: '10000000-0000-4000-8000-000000000001' }])
+})
+
+test('Citizen cannot enter Officer or Officer-provisioning routes', async ({ page }) => {
+  await mockSupabase(page); await login(page)
+  await expect(page).toHaveURL(/\/workspace$/)
+  for (const path of ['/officer/complaints', '/admin/officers/new']) {
+    await page.evaluate((path) => { window.history.pushState(null, '', path); window.dispatchEvent(new PopStateEvent('popstate')) }, path)
+    await expect(page.getByRole('heading', { name: path.startsWith('/admin') ? 'Administrator access required' : 'Officer access required' })).toBeVisible()
+  }
+})
+
+test('Administrator sees email-delivery refusal without false success or automatic retry', async ({ page }) => {
+  await mockSupabase(page, 'administrator')
+  let attempts = 0
+  await page.route('https://*.supabase.co/functions/v1/provision-officer', async (route) => {
+    attempts++
+    await route.fulfill({ status: 409, json: { code: 'email_delivery_unavailable' } })
+  })
+  await login(page)
+  await page.getByRole('link', { name: 'User management', exact: true }).click()
+  await page.getByRole('link', { name: 'Create Officer account' }).click()
+  await page.getByLabel('Officer full name').fill('Sample Officer')
+  await page.getByLabel('Officer email address').fill('officer@example.test')
+  await page.getByLabel('Department', { exact: true }).selectOption('10000000-0000-4000-8000-000000000001')
+  await page.getByRole('button', { name: 'Send Officer invitation' }).click()
+  await expect(page.getByRole('alert')).toContainText('configure the email service')
+  await expect(page.getByRole('status')).toHaveCount(0)
+  expect(attempts).toBe(1)
 })

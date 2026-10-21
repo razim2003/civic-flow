@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import { canWithdraw, submissionSchema, withdrawalSchema } from './complaint'
 import { parseCoordinate, validPoint } from '../../../shared/location/coordinates'

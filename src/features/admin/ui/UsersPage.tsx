@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { RefreshCw, Users } from 'lucide-react'
 import { roleLabels, roles } from '../../auth'
 import type { Profile, Role } from '../../auth'
@@ -9,7 +10,7 @@ export function UsersPage() {
   const data = useUsers()
   const [editing, setEditing] = useState<Profile | null>(null)
   const [role, setRole] = useState<Role>('citizen')
-  return <><div className="page-heading"><span className="eyebrow">ADMINISTRATION</span><h1>User management</h1><p>Help your team work together with the right account access.</p></div>
+  return <><div className="page-heading heading-with-action"><div><span className="eyebrow">ADMINISTRATION</span><h1>User management</h1><p>Help your team work together with the right account access.</p></div><Link className="button button-primary" to="/admin/officers/new">Create Officer account</Link></div>
     {data.error && <Notice>{data.error}</Notice>}{data.success && <Notice success>{data.success}</Notice>}
     {editing && <section className="panel edit-form"><h2>Edit user access</h2><p className="muted">Changes take effect immediately. At least one active administrator must remain.</p><form onSubmit={(event) => {
       event.preventDefault(); const values = new FormData(event.currentTarget)

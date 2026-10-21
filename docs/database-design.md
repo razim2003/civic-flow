@@ -1,6 +1,6 @@
 # Initial database and access-control design
 
-Status: migrations 001-008, including citizen complaint/evidence operations, six routing categories and user-approved CF-22 withdrawal, are applied to the configured hosted project with user authorization. Later Officer/feedback/notification contracts below remain planned. The proposal requires Submitted and Resolved states and valid transitions; intermediate states and detailed policy below are documented design decisions/assumptions, not additional proposal requirements. Withdrawal is a separate explicit user request.
+Status: all 11 migration files are applied to the configured hosted project with user authorization. Migrations 001-008 provide citizen complaint/evidence operations, six routing categories and user-approved CF-22 withdrawal. The user specifically approved the Officer processing/resolution and non-retrying withdrawal-conflict migrations on 2026-10-21; their functions/grants are installed and existing complaint/evidence/history checksums were preserved. Feedback and notification-inbox contracts remain planned. The proposal requires Submitted and Resolved states and valid transitions; intermediate states and detailed policy below are documented design decisions/assumptions, not additional proposal requirements. Withdrawal is a separate explicit user request.
 
 ## Conventions
 
@@ -114,13 +114,14 @@ Every protected read/write requires a non-null Auth user and an active profile. 
 | Complaint reads | Own only | Department queue; previous personally owned complaints remain owner-readable | All for monitoring |
 | Complaint creation | Own; Citizen role required | No | No |
 | Withdraw unresolved complaint | Active Citizen owner, reason and expected version required | No | No |
-| Assign/priority/review/transfer | No | Current department's non-resolved complaints, with rules below | No implicit workflow bypass |
+| Assign/priority/review/transfer | No | Current department's unresolved complaints (neither Resolved nor Withdrawn), with rules below | No implicit workflow bypass |
 | Start/progress/resolve | No | Active assigned officer only | No implicit workflow bypass |
 | History / attached evidence / feedback reads | Own complaint | Department complaint | All, including monitoring context |
 | Upload evidence | Own complaint, still Submitted | No | No |
 | Submit feedback | Own resolved complaint; Citizen role required | No | No |
 | Notifications | Own only | Own only, if generated later | Own only; admin is not a notification inbox bypass |
 | User role/department/active changes | No | No | Dedicated audited RPC |
+| Create Officer account | No | No | Auth-verified Edge invitation, then audited role/department RPC |
 | Raw table INSERT/UPDATE/DELETE | No | No | No; all app mutations use controlled RPCs |
 
 Child record policies use the parent complaint access rule. Pending evidence is visible only to its uploader (and controlled cleanup tooling), not to the whole officer queue. No public bucket or public complaint map. An administrator's monitoring access does not automatically allow resolution as an officer.
@@ -136,9 +137,10 @@ The signatures below are contracts, not executable SQL. All identity, role and t
 | `submit_complaint(category_id, description, location_text, latitude, longitude, request_id)` | Active Citizen, bounded input, active category/department; create Submitted row, version-1 event and confirmation notification atomically. Same actor/request/payload returns original row; changed payload with reused request ID is rejected |
 | `withdraw_complaint(id, reason, expected_version)` | Active Citizen owner; Submitted/Under Review/In Progress -> final Withdrawn. Reason required; release assignment, record actor/time and atomic reason event/update. Resolved/Withdrawn reject new actions; identical lost-response retry is a no-op |
 | `review_complaint(id, expected_version, remark?)` | Current department Officer; Submitted -> Under Review |
-| `assign_complaint(id, officer_id, expected_version, reason?)` | Current department Officer, non-resolved row, target active Officer in same department; changing assignee during In Progress requires reason; assignee cannot be null during In Progress |
+| `list_assignable_officers(department_id)` | Active same-department Officer or Administrator; returns only active Officer IDs/display names in an active department; no base-profile read expansion |
+| `assign_complaint(id, officer_id, expected_version, reason?)` | Current department Officer, unresolved row, target active Officer in same department; changing assignee during In Progress requires a 10–2,000 character reason; target always non-null |
 | `transfer_complaint(id, department_id, category_id, expected_version, reason)` | Current department Officer; only Submitted or Under Review; active destination and matching category; clear assignee; log old/new department/category; no In Progress/Resolved transfer |
-| `set_complaint_priority(id, priority, expected_version, reason?)` | Current department Officer; valid priority; non-resolved row |
+| `set_complaint_priority(id, priority, expected_version, reason?)` | Current department Officer; valid priority; unresolved row |
 | `start_complaint(id, expected_version, remark?)` | Assigned Officer, Under Review -> In Progress |
 | `add_progress(id, remark, expected_version)` | Assigned Officer, In Progress; non-empty bounded remark; no arbitrary status parameter |
 | `resolve_complaint(id, resolution_text, expected_version)` | Assigned Officer, In Progress -> Resolved; resolution/date/actor, history and notification committed together |

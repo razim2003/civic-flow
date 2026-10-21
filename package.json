@@ -11,10 +11,11 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "lint": "eslint . --max-warnings 0",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b && tsc -p tsconfig.functions.json",
     "test": "vitest run --project unit",
     "test:watch": "vitest --project unit",
     "test:db": "vitest run --project database",
+    "test:integration": "node scripts/test-postgres-http.mjs",
     "test:e2e": "playwright test",
     "db:types": "node scripts/generate-database-types.mjs"
   },

@@ -12,6 +12,7 @@ const content = {
   register: { eyebrow: 'SMALL ACTIONS. REAL CHANGE.', title: 'Make a difference.', description: 'Create your citizen account to get started.', action: 'Create account' },
   'forgot-password': { eyebrow: 'LET’S GET YOU BACK IN.', title: 'Forgot your password?', description: 'Enter your email and we’ll send you a reset link.', action: 'Send reset link' },
   'reset-password': { eyebrow: 'A FRESH START.', title: 'Set a new password.', description: 'Choose a strong password for your account.', action: 'Update password' },
+  'set-password': { eyebrow: 'WELCOME TO CIVICFLOW.', title: 'Set up your account.', description: 'Choose your own password to accept your account invitation.', action: 'Set password' },
 }
 
 function CommunityIllustration() {
@@ -33,10 +34,12 @@ export function AuthPage({ mode = 'login', callback = false }: { mode?: AuthMode
   const form = useAuthForm(mode)
   const [showPassword, setShowPassword] = useState(false)
   const copy = content[mode]
+  const passwordSetup = mode === 'reset-password' || mode === 'set-password'
   if (auth.loading) return <LoadingScreen />
-  if (auth.profile && mode !== 'reset-password') return <Navigate to="/workspace" replace />
-  const blocked = !!auth.userId && !auth.profile && mode !== 'reset-password'
+  if (auth.profile && !passwordSetup) return <Navigate to="/workspace" replace />
+  const blocked = !!auth.userId && !auth.profile && !passwordSetup
   const invalidRecovery = mode === 'reset-password' && (!auth.userId || !auth.recovery)
+  const invalidInvitation = mode === 'set-password' && !auth.userId
   return <main className="auth-layout">
     <section className="auth-story" aria-label="About CivicFlow">
       <Brand light />
@@ -57,20 +60,20 @@ export function AuthPage({ mode = 'login', callback = false }: { mode?: AuthMode
       <div className="auth-card" key={mode}>
         <span className="eyebrow">{copy.eyebrow}</span><h2>{blocked ? 'Your account needs attention.' : copy.title}</h2>
         <p className="auth-description">{blocked ? 'We could not open your workspace. You can retry or sign out.' : copy.description}</p>
-        {blocked ? <><Notice>{auth.error ?? 'Account access is unavailable.'}</Notice><div className="button-row"><button className="button button-primary" onClick={() => void auth.refreshProfile()}>Try again</button><button className="button button-secondary" onClick={() => void auth.logout().catch(() => undefined)}>Sign out</button></div></> : invalidRecovery ? <><Notice>Your reset link is missing or has expired. Request a new link to continue.</Notice><Link className="text-link" to="/forgot-password">Request another reset link <ArrowRight size={15} aria-hidden="true" /></Link></> : <>
+        {blocked ? <><Notice>{auth.error ?? 'Account access is unavailable.'}</Notice><div className="button-row"><button className="button button-primary" onClick={() => void auth.refreshProfile()}>Try again</button><button className="button button-secondary" onClick={() => void auth.logout().catch(() => undefined)}>Sign out</button></div></> : invalidRecovery ? <><Notice>Your reset link is missing or has expired. Request a new link to continue.</Notice><Link className="text-link" to="/forgot-password">Request another reset link <ArrowRight size={15} aria-hidden="true" /></Link></> : invalidInvitation ? <><Notice>Your invitation link is missing or has expired. Ask your Administrator for help, or use password recovery if your account already exists.</Notice><Link className="text-link" to="/forgot-password">Recover account access</Link></> : <>
           {(mode === 'login' || mode === 'register') && <nav className="auth-tabs" aria-label="Choose account action"><Link to="/login" aria-current={mode === 'login' ? 'page' : undefined}>Sign in</Link><Link to="/register" aria-current={mode === 'register' ? 'page' : undefined}>Create account</Link></nav>}
           {callback && !auth.userId && <Notice success>Return here to sign in after completing email verification. If your link expired, request a new one by registering again.</Notice>}
           {form.error && <Notice>{form.error}</Notice>}{form.success && <Notice success>{form.success}</Notice>}
           <form noValidate onSubmit={(event) => { event.preventDefault(); void form.submit(event.currentTarget) }}>
             {mode === 'register' && <Field label="Full name" name="displayName" autoComplete="name" placeholder="Your full name" maxLength={100} error={form.errors.displayName} />}
-            {mode !== 'reset-password' && <Field label="Email address" type="email" name="email" autoComplete="email" placeholder="you@example.com" maxLength={254} error={form.errors.email} />}
-            {mode !== 'forgot-password' && <div className="password-field"><Field label={mode === 'reset-password' ? 'New password' : 'Password'} type={showPassword ? 'text' : 'password'} name="password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} placeholder={mode === 'login' ? 'Enter your password' : 'At least 12 characters'} maxLength={128} error={form.errors.password} hint={mode === 'register' ? 'Use at least 12 characters for a stronger password.' : undefined} /><button className="password-toggle" type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div>}
-            {mode === 'reset-password' && <Field label="Confirm new password" name="confirmPassword" type={showPassword ? 'text' : 'password'} autoComplete="new-password" maxLength={128} error={form.errors.confirmPassword} />}
+            {!passwordSetup && <Field label="Email address" type="email" name="email" autoComplete="email" placeholder="you@example.com" maxLength={254} error={form.errors.email} />}
+            {mode !== 'forgot-password' && <div className="password-field"><Field label={passwordSetup ? 'New password' : 'Password'} type={showPassword ? 'text' : 'password'} name="password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} placeholder={mode === 'login' ? 'Enter your password' : 'At least 12 characters'} maxLength={128} error={form.errors.password} hint={mode === 'register' ? 'Use at least 12 characters for a stronger password.' : undefined} /><button className="password-toggle" type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div>}
+            {passwordSetup && <Field label="Confirm new password" name="confirmPassword" type={showPassword ? 'text' : 'password'} autoComplete="new-password" maxLength={128} error={form.errors.confirmPassword} />}
             {mode === 'login' && <div className="form-help"><span><ShieldCheck size={14} aria-hidden="true" /> Your information stays protected</span><Link to="/forgot-password">Forgot password?</Link></div>}
             <SubmitButton busy={form.busy}>{copy.action}<ArrowRight size={17} aria-hidden="true" /></SubmitButton>
           </form>
           {mode === 'register' && <p className="form-note">This creates a Citizen account. Officer and administrator access is managed by your organization.</p>}
-          {mode === 'reset-password' && form.success && <Link to="/workspace" className="text-link">Go to workspace <ArrowRight size={15} /></Link>}
+          {passwordSetup && form.success && <Link to="/workspace" className="text-link">Go to workspace <ArrowRight size={15} /></Link>}
           {mode === 'forgot-password' && <Link to="/login" className="back-link"><ArrowLeft size={15} aria-hidden="true" /> Back to sign in</Link>}
           {mode === 'login' && <p className="auth-alternative">New to CivicFlow? <Link to="/register">Join your community <ArrowRight size={14} aria-hidden="true" /></Link></p>}
         </>}

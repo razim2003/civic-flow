@@ -135,6 +135,11 @@ export type Database = { public: {
   }
   Views: { [_ in never]: never }
   Functions: {
+    add_progress: { Args: {
+      p_id: string
+      p_remark: string
+      p_expected_version: number
+    }; Returns: Database['public']['Tables']['complaints']['Row'][] }
     admin_update_user: { Args: {
       p_target_id: string
       p_role: Database['public']['Enums']['app_role']
@@ -142,9 +147,18 @@ export type Database = { public: {
       p_is_active: boolean
       p_display_name: string
     }; Returns: Database['public']['Tables']['profiles']['Row'][] }
+    assign_complaint: { Args: {
+      p_id: string
+      p_officer_id: string
+      p_expected_version: number
+      p_reason: string
+    }; Returns: Database['public']['Tables']['complaints']['Row'][] }
     finalize_evidence: { Args: {
       p_evidence_id: string
     }; Returns: Database['public']['Tables']['complaint_evidence']['Row'][] }
+    list_assignable_officers: { Args: {
+      p_department_id: string
+    }; Returns: Json }
     reserve_evidence: { Args: {
       p_complaint_id: string
       p_filename: string
@@ -152,6 +166,27 @@ export type Database = { public: {
       p_size: number
       p_request_id: string
     }; Returns: Database['public']['Tables']['complaint_evidence']['Row'][] }
+    resolve_complaint: { Args: {
+      p_id: string
+      p_resolution_text: string
+      p_expected_version: number
+    }; Returns: Database['public']['Tables']['complaints']['Row'][] }
+    review_complaint: { Args: {
+      p_id: string
+      p_expected_version: number
+      p_remark: string
+    }; Returns: Database['public']['Tables']['complaints']['Row'][] }
+    set_complaint_priority: { Args: {
+      p_id: string
+      p_priority: Database['public']['Enums']['complaint_priority']
+      p_expected_version: number
+      p_reason: string
+    }; Returns: Database['public']['Tables']['complaints']['Row'][] }
+    start_complaint: { Args: {
+      p_id: string
+      p_expected_version: number
+      p_remark: string
+    }; Returns: Database['public']['Tables']['complaints']['Row'][] }
     submit_complaint: { Args: {
       p_category_id: string
       p_description: string
@@ -159,6 +194,13 @@ export type Database = { public: {
       p_latitude: number
       p_longitude: number
       p_request_id: string
+    }; Returns: Database['public']['Tables']['complaints']['Row'][] }
+    transfer_complaint: { Args: {
+      p_id: string
+      p_department_id: string
+      p_category_id: string
+      p_expected_version: number
+      p_reason: string
     }; Returns: Database['public']['Tables']['complaints']['Row'][] }
     update_my_profile: { Args: {
       p_display_name: string

@@ -22,7 +22,7 @@ port = 54323
 [auth]
 enabled = true
 site_url = "http://localhost:5173"
-additional_redirect_urls = ["http://localhost:5173/auth/callback", "http://localhost:5173/reset-password", "http://127.0.0.1:5173/auth/callback", "http://127.0.0.1:5173/reset-password"]
+additional_redirect_urls = ["http://localhost:5173/auth/callback", "http://localhost:5173/reset-password", "http://127.0.0.1:5173/auth/callback", "http://127.0.0.1:5173/reset-password", "http://localhost:5173/accept-invite", "http://127.0.0.1:5173/accept-invite"]
 enable_signup = true
 enable_anonymous_sign_ins = false
 minimum_password_length = 12
@@ -30,7 +30,21 @@ minimum_password_length = 12
 [auth.email]
 enable_signup = true
 enable_confirmations = true
+max_frequency = "1m"
+otp_length = 8
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
 
 [storage]
 enabled = true
-file_size_limit = "5MiB"
+file_size_limit = "50MiB"
+
+# Preserve the hosted Free-plan setting. The private evidence bucket enforces 5MiB.
+[storage.vector]
+enabled = false
+
+[functions.provision-officer]
+# New publishable keys require verification inside the function with getUser.
+verify_jwt = false

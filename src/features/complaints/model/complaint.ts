@@ -13,7 +13,7 @@ export const submissionSchema = z.object({
 })
 export type Submission = z.infer<typeof submissionSchema>
 export const complaintSchema = z.object({
-  id: z.uuid(), citizen_id: z.uuid(), category_id: z.uuid(), department_id: z.uuid(),
+  id: z.uuid(), citizen_id: z.uuid(), category_id: z.uuid(), department_id: z.uuid(), assigned_officer_id: z.uuid().nullable(),
   description: z.string(), location_text: z.string(), latitude: z.number(), longitude: z.number(),
   status: z.enum(statuses), priority: z.enum(['low', 'normal', 'high', 'urgent']),
   resolution_text: z.string().nullable(), resolved_at: z.string().nullable(),

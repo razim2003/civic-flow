@@ -53,7 +53,7 @@ describe('CF-22 owner withdrawal with retained audit history', () => {
   it('rejects stale writes and resolved complaints without changing their records', async () => {
     const id = await create()
     await db.query('update public.complaints set version=2 where id=$1', [id])
-    await expect(withdraw(id)).rejects.toThrow('stale_version')
+    await expect(withdraw(id)).rejects.toMatchObject({ code: 'PT409', message: 'stale_version' })
     expect((await db.query('select status,withdrawal_reason,version from public.complaints where id=$1', [id])).rows[0]).toEqual({ status: 'submitted', withdrawal_reason: null, version: 2 })
     const resolved = await create('resolved')
     await expect(withdraw(resolved)).rejects.toThrow('withdrawal_closed')

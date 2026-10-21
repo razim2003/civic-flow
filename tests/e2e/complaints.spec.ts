@@ -7,8 +7,8 @@ const department = '20000000-0000-4000-8000-000000000001'
 const complaintId = '30000000-0000-4000-8000-000000000001'
 const evidenceId = '40000000-0000-4000-8000-000000000001'
 const date = '2026-10-19T08:00:00.000Z'
-type Complaint = { id: string; citizen_id: string; category_id: string; department_id: string; description: string; location_text: string; latitude: number; longitude: number; status: string; priority: string; resolution_text: null; resolved_at: null; withdrawal_reason: string | null; withdrawn_at: string | null; withdrawn_by: string | null; version: number; created_at: string; updated_at: string }
-const report = (id = complaintId): Complaint => ({ id, citizen_id: citizen, category_id: category, department_id: department, description: 'Several deep potholes beside the public school.', location_text: 'School Road', latitude: 6.927, longitude: 79.861, status: 'submitted', priority: 'normal', resolution_text: null, resolved_at: null, withdrawal_reason: null, withdrawn_at: null, withdrawn_by: null, version: 1, created_at: date, updated_at: date })
+type Complaint = { id: string; citizen_id: string; category_id: string; department_id: string; assigned_officer_id: string | null; description: string; location_text: string; latitude: number; longitude: number; status: string; priority: string; resolution_text: null; resolved_at: null; withdrawal_reason: string | null; withdrawn_at: string | null; withdrawn_by: string | null; version: number; created_at: string; updated_at: string }
+const report = (id = complaintId): Complaint => ({ id, citizen_id: citizen, category_id: category, department_id: department, assigned_officer_id: null, description: 'Several deep potholes beside the public school.', location_text: 'School Road', latitude: 6.927, longitude: 79.861, status: 'submitted', priority: 'normal', resolution_text: null, resolved_at: null, withdrawal_reason: null, withdrawn_at: null, withdrawn_by: null, version: 1, created_at: date, updated_at: date })
 
 async function fixture(page: Page, options: { reports?: Complaint[]; lostSubmissionResponse?: boolean; uploadFailure?: boolean; tileFailure?: boolean; noCategories?: boolean; withdrawalFailure?: 'stale' | 'lost' } = {}) {
   const now = Math.floor(Date.now() / 1000)
@@ -18,9 +18,13 @@ async function fixture(page: Page, options: { reports?: Complaint[]; lostSubmiss
   const submissionRequests: Record<string, unknown>[] = []
   const uploadRequests: Record<string, unknown>[] = []
   const withdrawalRequests: Record<string, unknown>[] = []
+  const tileRequests: string[] = []
   let uploaded = false, attached = false, attempts = 0
   const evidence = () => ({ id: evidenceId, complaint_id: complaintId, object_path: `${citizen}/${complaintId}/${evidenceId}.pdf`, original_filename: 'sample.pdf', declared_content_type: 'application/pdf', declared_size_bytes: 9, state: attached ? 'attached' : 'pending', expires_at: '2099-01-01T00:00:00Z', attached_at: attached ? date : null })
-  await page.route('https://tile.openstreetmap.org/**', (route) => options.tileFailure ? route.abort() : route.fulfill({ contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mP8/x8AAwMCAO+jhS8AAAAASUVORK5CYII=', 'base64') }))
+  await page.route('https://tile.openstreetmap.org/**', (route) => {
+    tileRequests.push(new URL(route.request().url()).pathname)
+    return options.tileFailure ? route.abort() : route.fulfill({ contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mP8/x8AAwMCAO+jhS8AAAAASUVORK5CYII=', 'base64') })
+  })
   await page.route('https://*.supabase.co/**', async (route) => {
     const request = route.request(), url = new URL(request.url())
     const single = request.headers().accept?.includes('vnd.pgrst.object')
@@ -41,7 +45,7 @@ async function fixture(page: Page, options: { reports?: Complaint[]; lostSubmiss
       if (!complaint) return route.fulfill({ status: 403, json: { code: '42501', message: 'not_authorized' } })
       if (options.withdrawalFailure === 'stale' && withdrawalRequests.length === 1) {
         complaint.version++
-        return route.fulfill({ status: 409, json: { code: '40001', message: 'stale_version' } })
+        return route.fulfill({ status: 409, json: { code: 'PT409', message: 'stale_version' } })
       }
       if (complaint.status !== 'withdrawn') Object.assign(complaint, { status: 'withdrawn', withdrawal_reason: input.p_reason, withdrawn_at: date, withdrawn_by: citizen, version: complaint.version + 1 })
       if (options.withdrawalFailure === 'lost' && withdrawalRequests.length === 1) return route.fulfill({ status: 503, json: { message: 'Temporary network failure' } })
@@ -72,7 +76,7 @@ async function fixture(page: Page, options: { reports?: Complaint[]; lostSubmiss
     }
     return route.fulfill({ status: 501, json: { message: 'Unexpected external request blocked by fixture' } })
   })
-  return { rows, submissionRequests, uploadRequests, withdrawalRequests }
+  return { rows, submissionRequests, uploadRequests, withdrawalRequests, tileRequests }
 }
 async function login(page: Page) {
   await page.goto('/login')
@@ -155,6 +159,100 @@ test('blank coordinates fail validation, map click selects location, unavailable
   await page.getByRole('button', { name: 'Submit complaint' }).click()
   await expect(page.getByRole('heading', { name: 'Complaint submitted', exact: true })).toBeVisible()
   expect(state.submissionRequests[0]).toMatchObject({ p_latitude: 0, p_longitude: 0 })
+})
+
+test('Southern Province opens without a pin and opt-in device location zooms to the service point', async ({ page, context }, testInfo) => {
+  await context.grantPermissions(['geolocation'])
+  await context.setGeolocation({ latitude: 6.0535, longitude: 80.221, accuracy: 25 })
+  const state = await fixture(page)
+  await login(page)
+  await page.getByRole('link', { name: 'New complaint', exact: true }).click()
+  const map = page.locator('.leaflet-container')
+  await expect(map).toBeVisible()
+  await expect(page.getByLabel('Latitude')).toHaveValue('')
+  await expect(page.locator('.leaflet-marker-icon')).toHaveCount(0)
+  await expect.poll(() => state.tileRequests.some((path) => path.startsWith('/9/'))).toBe(true)
+  const bounds = await map.boundingBox()
+  if (!bounds) throw new Error('Map is not visible')
+  await map.click({ position: { x: bounds.width / 2, y: bounds.height / 2 } })
+  const latitude = Number(await page.getByLabel('Latitude').inputValue()), longitude = Number(await page.getByLabel('Longitude').inputValue())
+  expect(latitude).toBeGreaterThan(5.9); expect(latitude).toBeLessThan(6.6)
+  expect(longitude).toBeGreaterThan(80); expect(longitude).toBeLessThan(81.6)
+  await page.getByRole('button', { name: 'Use my current location', exact: true }).click()
+  await expect(page.getByLabel('Latitude')).toHaveValue('6.053500')
+  await expect(page.getByLabel('Longitude')).toHaveValue('80.221000')
+  await expect(page.getByRole('status').filter({ hasText: 'Current location selected.' })).toContainText('25 metres')
+  await expect(page.locator('.leaflet-marker-icon')).toBeVisible()
+  await expect.poll(() => state.tileRequests.some((path) => path.startsWith('/16/'))).toBe(true)
+  await page.getByLabel('Service category').selectOption(category)
+  await page.getByLabel('Describe the issue').fill('Several potholes at this fictional service location.')
+  await page.getByLabel('Location description').fill('Fictional service location near Galle')
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.getByRole('button', { name: 'Use my current location', exact: true }).scrollIntoViewIfNeeded()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: testInfo.outputPath('current-location-mobile.png'), fullPage: true })
+  await page.getByRole('button', { name: 'Submit complaint' }).click()
+  await expect(page.getByRole('heading', { name: 'Complaint submitted', exact: true })).toBeVisible()
+  expect(state.submissionRequests[0]).toMatchObject({ p_latitude: 6.0535, p_longitude: 80.221 })
+})
+
+for (const failure of [
+  { code: 1, message: 'Location access was blocked.' },
+  { code: 2, message: 'Your current location could not be found.' },
+  { code: 3, message: 'Finding your location took too long.' },
+]) test(`device location failure ${failure.code} preserves the chosen point and allows submission`, async ({ page }) => {
+  await page.addInitScript(({ code }) => {
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: { getCurrentPosition(_success: PositionCallback, error: PositionErrorCallback) { error({ code, message: 'Synthetic device failure', PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 }) } } })
+  }, failure)
+  const state = await fixture(page)
+  await login(page); await fillComplaint(page)
+  await page.getByRole('button', { name: 'Use my current location', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText(failure.message)
+  await expect(page.getByLabel('Latitude')).toHaveValue('6.927')
+  await expect(page.getByLabel('Longitude')).toHaveValue('79.861')
+  await expect(page.getByRole('button', { name: 'Use my current location', exact: true })).toBeEnabled()
+  await page.getByRole('button', { name: 'Submit complaint' }).click()
+  await expect(page.getByRole('heading', { name: 'Complaint submitted', exact: true })).toBeVisible()
+  expect(state.submissionRequests[0]).toMatchObject({ p_latitude: 6.927, p_longitude: 79.861 })
+})
+
+test('a browser without geolocation keeps map and coordinate selection available', async ({ page }) => {
+  await page.addInitScript(() => Object.defineProperty(navigator, 'geolocation', { configurable: true, value: undefined }))
+  await fixture(page)
+  await login(page); await fillComplaint(page)
+  await page.getByRole('button', { name: 'Use my current location', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('This browser does not support current location.')
+  await page.locator('.leaflet-container').click({ position: { x: 120, y: 130 } })
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(page.getByLabel('Latitude')).not.toHaveValue('6.927')
+  await expect(page.getByRole('button', { name: 'Submit complaint' })).toBeEnabled()
+})
+
+for (const action of ['cancel', 'manual selection']) test(`${action} prevents a late device result from changing the complaint location`, async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: { getCurrentPosition(success: PositionCallback) {
+      document.addEventListener('test-location-result', () => {
+        const coords = { latitude: 6.0535, longitude: 80.221, accuracy: 25, altitude: null, altitudeAccuracy: null, heading: null, speed: null, toJSON() { return { latitude: this.latitude, longitude: this.longitude } } }
+        success({ coords, timestamp: Date.now(), toJSON() { return { coords: this.coords.toJSON(), timestamp: this.timestamp } } })
+      }, { once: true })
+    } } })
+  })
+  const state = await fixture(page)
+  await login(page); await fillComplaint(page)
+  await page.getByRole('button', { name: 'Use my current location', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Finding your location…', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Submit complaint' })).toBeDisabled()
+  if (action === 'cancel') await page.getByRole('button', { name: 'Cancel location lookup', exact: true }).click()
+  await page.getByLabel('Latitude').fill('6.1')
+  await page.getByLabel('Longitude').fill('80.5')
+  await page.evaluate(() => document.dispatchEvent(new Event('test-location-result')))
+  await expect(page.getByLabel('Latitude')).toHaveValue('6.1')
+  await expect(page.getByLabel('Longitude')).toHaveValue('80.5')
+  await expect(page.getByRole('status').filter({ hasText: 'Current location selected.' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Submit complaint' })).toBeEnabled()
+  await page.getByRole('button', { name: 'Submit complaint' }).click()
+  await expect(page.getByRole('heading', { name: 'Complaint submitted', exact: true })).toBeVisible()
+  expect(state.submissionRequests[0]).toMatchObject({ p_latitude: 6.1, p_longitude: 80.5 })
 })
 
 test('list pagination/search/status preserve ownership and mobile content fits', async ({ page }, testInfo) => {

@@ -4,7 +4,7 @@ import { authApi } from '../data/auth-api'
 import { emailSchema, fieldErrors, loginSchema, registerSchema, resetPasswordSchema } from '../model/auth'
 import { userMessage } from '../../../shared/errors/message'
 
-export type AuthMode = 'login' | 'register' | 'forgot-password' | 'reset-password'
+export type AuthMode = 'login' | 'register' | 'forgot-password' | 'reset-password' | 'set-password'
 
 export function useAuthForm(mode: AuthMode) {
   const [busy, setBusy] = useState(false)

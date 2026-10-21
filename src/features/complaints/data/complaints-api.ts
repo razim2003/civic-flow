@@ -2,7 +2,7 @@ import { supabase } from '../../../shared/lib/supabase/client'
 import { categorySchema, complaintSchema, departmentSchema, eventSchema, PAGE_SIZE, statuses } from '../model/complaint'
 import type { Submission } from '../model/complaint'
 
-const fields = 'id,citizen_id,category_id,department_id,description,location_text,latitude,longitude,status,priority,resolution_text,resolved_at,withdrawal_reason,withdrawn_at,withdrawn_by,version,created_at,updated_at'
+const fields = 'id,citizen_id,category_id,department_id,assigned_officer_id,description,location_text,latitude,longitude,status,priority,resolution_text,resolved_at,withdrawal_reason,withdrawn_at,withdrawn_by,version,created_at,updated_at'
 
 export async function getLookups() {
   const [categories, departments] = await Promise.all([

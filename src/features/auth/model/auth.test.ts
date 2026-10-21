@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import { loginSchema, registerSchema, resetPasswordSchema } from './auth'
 import { parsePublicConfig } from '../../../shared/config/env'

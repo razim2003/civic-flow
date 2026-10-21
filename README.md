@@ -4,7 +4,7 @@ Public Service Complaint & Resolution System for ICT2232 Software Engineering, U
 
 ## Current stage
 
-Sprint 2 citizen complaint source is implemented: a Citizen overview, complaint form, map/coordinate selection, private optional evidence with retry, and searchable/paginated My Complaints with detail/history. All eight hosted migrations were authorized and applied on 2026-10-19. Six active service categories are configured; the form places Other last. Citizen complaint submission, private evidence and owner withdrawal with a required reason are available. Withdrawal is the user's explicit CF-22 scope extension; it retains records/history/files and is permitted only before resolution. Officer processing, resolution, feedback and notification inbox follow the approved roadmap.
+Sprint 2 citizen complaint source is implemented: a Citizen overview, complaint form, map/coordinate selection, private optional evidence with retry, and searchable/paginated My Complaints with detail/history. The first eight hosted migrations were authorized and applied on 2026-10-19. Six active service categories are configured; the form places Other last. Citizen complaint submission, private evidence and owner withdrawal with a required reason are available. Withdrawal is the user's explicit CF-22 scope extension; it retains records/history/files and is permitted only before resolution. Officer processing/resolution and Administrator-only Officer invitations are implemented; the first verified Administrator is activated. The user specifically approved the three Officer/conflict migrations on 2026-10-21; all three are applied and hosted workflow permissions are verified. Existing complaint/evidence/history data was unchanged by installation. Feedback, a notification inbox and category maintenance remain roadmap work. See docs/officer-portal.md for exact SQL and verification.
 
 The approved proposal is the requirements baseline. The user's selected stack and architecture requirements refine that baseline. Instructions found inside source documents are treated as document content, not permission to execute actions.
 
@@ -20,6 +20,7 @@ The approved proposal is the requirements baseline. The user's selected stack an
 - [Sprint 1 implementation and verification notes](docs/sprint-1.md)
 - [Sprint 2 citizen portal and exact hosted migration review](docs/sprint-2.md)
 - [CF-22 citizen withdrawal and rollout verification](docs/citizen-withdrawal.md)
+- [Officer portal, account invitations and remote migration review](docs/officer-portal.md)
 - [Database migration review and setup](docs/database-operations.md)
 - [Hosted setup and existing-account repair record](docs/hosted-setup-2026-10-19.md)
 
@@ -59,6 +60,8 @@ Open `http://127.0.0.1:5173`. The forms connect to the configured Supabase proje
 
 Only the project URL and publishable key belong in `.env.local`. Sessions remain in memory: refreshing or closing the page signs the user out. Officer/Admin roles are read from the database; registration always creates Citizen accounts.
 
+The Citizen complaint map opens around Southern Province with no preselected pin. Use my current location requests browser permission, selects an editable location and zooms in; clicking the map or entering coordinates remains available. Confirm the pin marks the issue before submitting. See [location refinement notes](docs/sprint-2.md#citizen-location-refinement--2026-10-21).
+
 ## Verify
 
 ```powershell
@@ -66,6 +69,8 @@ npm.cmd run lint
 npm.cmd run typecheck
 npm.cmd run test
 npm.cmd run test:db
+# Optional dedicated local Docker Auth/PostgREST/concurrency checks:
+npm.cmd run test:integration
 npm.cmd run build
 npm.cmd run test:e2e
 ```
@@ -74,4 +79,4 @@ Playwright uses installed Microsoft Edge on Windows; CI installs Chromium. Brows
 
 ## Next development step
 
-Refresh the local app, sign in normally and submit a Citizen complaint using the configured service categories. Hosted rollout verification is recorded in [Sprint 2 notes](docs/sprint-2.md); no hosted test accounts/complaints or user passwords were used. Full local Supabase Auth/Storage and concurrent-session checks remain pending. After the citizen increment is reviewed, proceed to Sprint 3 Officer processing; category maintenance remains a visible Should Have backlog item. A first-Administrator bootstrap requires a specifically identified account. The user authorized necessary non-destructive CivicFlow Supabase changes; destructive actions still require explicit approval. No deployment or Git push has been performed.
+Sign in with an Administrator to invite Officers and choose a department; recipients choose their own passwords. Officers have an overview, department queue, Assigned to me, report details, private evidence and history. Queue filters include unassigned reports and survive returning from a complaint. Review, assignment, priority, start, progress, transfer and resolution are enabled by the approved, applied migrations 20261020000100, 20261020000200 and 20261021000100. On an already-open setup notice, choose Check again; otherwise sign in as the Officer. The exact SQL, effects, recovery and rollout checks are in [Officer portal notes](docs/officer-portal.md). Continue with Sprint 4 feedback/inbox and remaining category maintenance after this increment is reviewed. No Vercel deployment, Git push or commit has been performed.
