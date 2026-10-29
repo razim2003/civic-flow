@@ -43,7 +43,11 @@ Each requirement is atomic, testable and traced to the proposal page. "Verified 
 | CF-21 | … provide Administrators with read-only complaint monitoring information (counts by status, average rating). | Could | p. 11 | TC-MON-01, TC-U-MON-01 |
 | CF-22 | … allow the owning Citizen to withdraw an unresolved complaint with a 10–2,000 character reason, retaining its record, evidence and history. *(approved scope extension)* | Should | change record | TC-WD-01…04, TC-DB-WD-01…05 |
 
-That is 22 functional requirements, above the minimum of 12.
+| CF-23 | … automatically assign each new complaint to the active Officer with the fewest open assignments in the routed department, and notify that Officer. *(CR-006)* | Must | CR-006 | TC-DB-DSP-01…03, TC-DSP-03 |
+| CF-24 | … allow an active Administrator to dispatch an open complaint: route it to another active department/category and/or assign an active Officer of that department, with a recorded 10–2,000 character reason. *(CR-006)* | Must | CR-006 | TC-DSP-01, TC-DB-DSP-04…09 |
+| CF-25 | … apply a service-level target per priority (urgent 1 day, high 3, normal 7, low 14), flag open complaints that are due soon or overdue, and report on-target resolution. *(CR-006)* | Should | CR-006 | TC-U-SLA-01, TC-DSP-02, TC-DSP-03 |
+
+That is 25 functional requirements, above the minimum of 12. CF-23…25 were added by change request CR-006 after a coverage gap was found in use ([sprint-5.md](../sprint-5.md)).
 
 ## 4.3 Non-functional requirements
 
@@ -92,6 +96,7 @@ flowchart LR
   A --- UC02 & UC09 & UC10 & UC14
   UC03 -. «extend» .-> UC13
   UC07 -. «enables» .-> UC08
+  A --- UC15([UC-15 Dispatch complaint])
   UC01 & UC02 & UC09 --- AUTH
 ```
 
@@ -146,6 +151,11 @@ flowchart LR
 ### UC-12 View updates inbox (CF-13)
 - **Actor:** Citizen. **Main flow:** 1) The navigation badge shows the unread count. 2) Open *Updates*. 3) Read items (newest first). 4) *Mark as read*, or *Mark all as read*. 5) *View complaint* opens the detail page and marks the item read.
 
+### UC-15 Dispatch complaint (CF-24)
+- **Actor:** Administrator. **Precondition:** the complaint is Submitted, Under review or In progress.
+- **Main flow:** 1) Open the *Dispatch centre*. Coverage cards show departments with no Officers, and the *Needs attention* filter lists complaints that are unstaffed, unassigned or past target. 2) Choose *Dispatch*. 3) Select the department, a category of that department and optionally an Officer. 4) Enter a reason and confirm. The history gains a *Transferred* or *Officer assigned* event by the Administrator, and the citizen and new Officer are notified.
+- **Exceptions:** work in progress can't change department or lose its assignee. The complaint changed meanwhile: refresh. Closed complaints: refused.
+
 UC-01 (register), UC-02 (log in/out), UC-13 (attach evidence) and UC-14 (monitor) follow the proposal descriptions. Their flows are in the [user guide](user-guide.md).
 
 ## 4.6 Prioritisation (MoSCoW)
@@ -178,7 +188,10 @@ Columns: requirement → user story → use case → design artefact → impleme
 | CF-18 | US-17 | UC-04 | `complaint_events` | 004–011 event writes → timeline | TC-SUB-01, TC-DB-OFF-01 | Done |
 | CF-19 | US-18 | UC-08 | SD-3, `complaint_feedback` | 012 `submit_feedback` → `features/feedback` | TC-FB-01…02, TC-U-FB-01, TC-DB-FB-01…05 | Done |
 | CF-20 | US-19 | UC-10 | Category rules | 014 `admin_upsert_category` → `features/categories` | TC-CAT-01…02, TC-U-CAT-01, TC-DB-CAT-01…06 | Done |
-| CF-21 | US-21 | UC-14 | — | Existing admin RLS → `admin/AdminOverview` | TC-MON-01, TC-U-MON-01 | Done (basic) |
+| CF-21 | US-21 | UC-14 | Analytics view | 015 `admin_analytics`, `community_impact` → `features/analytics`, `admin/AdminOverview` | TC-MON-01, TC-DSP-02, TC-U-MON-01, TC-U-ANL-01, TC-DB-DSP-10…12 | Done (enhanced) |
+| CF-23 | US-22 | UC-03 | SD-4 | 015 `submit_complaint`, `private.pick_officer` | TC-DB-DSP-01…03, TC-DSP-03 | Done |
+| CF-24 | US-23 | UC-15 | SD-4 | 015 `admin_dispatch_complaint` → `features/dispatch` | TC-DSP-01, TC-U-DSP-01, TC-DB-DSP-04…09 | Done |
+| CF-25 | US-24 | UC-05, UC-15 | SLA table | `shared/sla.ts` + `private.sla_hours` | TC-U-SLA-01, TC-DSP-02, TC-DSP-03 | Done |
 | CF-22 | US-20 | UC-11 | State diagram | 007–008, 011 `withdraw_complaint` → `WithdrawalPanel` | TC-WD-01…04, TC-U-WD-01, TC-DB-WD-01…05 | Done |
 | NFR-04/05 | US-03 | all | [Security](10-security.md) | Grants, RLS, definer RPCs | TC-DB-FND-*, TC-INT-* | Done |
 | NFR-06 | — | — | Lock order, version checks | All workflow RPCs | TC-DB-*-rollback, TC-INT-04…06 | Done |

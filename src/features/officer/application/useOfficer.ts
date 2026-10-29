@@ -4,7 +4,7 @@ import { z } from 'zod'
 import type { Complaint } from '../../complaints'
 import { useAuth } from '../../auth'
 import { useResource } from '../../../shared/lib/useResource'
-import { executeWorkflow, loadOfficerLookups, loadOfficerSummary, loadQueue } from '../data/officer-api'
+import { executeWorkflow, loadDepartmentMap, loadOfficerLookups, loadOfficerSummary, loadQueue } from '../data/officer-api'
 import type { QueueFilters, WorkflowIntent } from '../model/officer'
 import { validateIntent, workflowMessage } from '../model/officer'
 
@@ -24,6 +24,14 @@ export function useOfficerOverview() {
     const [summary, queue, lookups] = await Promise.all([loadOfficerSummary(departmentId, actorId), loadQueue(departmentId, actorId, { page: 0, search: '', status: 'open', categoryId: '', priority: '', assignment: 'all' }), loadOfficerLookups(departmentId)])
     return { summary, ...queue, ...lookups }
   }, [departmentId, actorId]))
+}
+export function useOfficerMap() {
+  const { profile } = useAuth()
+  const departmentId = profile?.department_id ?? ''
+  return useResource(useCallback(async () => {
+    const [map, lookups] = await Promise.all([loadDepartmentMap(departmentId), loadOfficerLookups(departmentId)])
+    return { ...map, ...lookups }
+  }, [departmentId]))
 }
 export function useOfficerActions(complaint: Complaint, onChanged: () => Promise<void>) {
   const { profile } = useAuth()

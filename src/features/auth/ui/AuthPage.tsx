@@ -6,6 +6,7 @@ import { useAuthForm } from '../application/useAuthForm'
 import type { AuthMode } from '../application/useAuthForm'
 import { Brand } from '../../../shared/ui/Brand'
 import { Field, LoadingScreen, Notice, SubmitButton } from '../../../shared/ui/Form'
+import { ThemeToggle } from '../../../shared/ui/theme'
 
 const content = {
   login: { eyebrow: 'YOUR COMMUNITY. YOUR VOICE.', title: 'Welcome back.', description: 'Sign in to stay connected with your community.', action: 'Sign in' },
@@ -15,17 +16,18 @@ const content = {
   'set-password': { eyebrow: 'WELCOME TO CIVICFLOW.', title: 'Set up your account.', description: 'Choose your own password to accept your account invitation.', action: 'Set password' },
 }
 
-function CommunityIllustration() {
-  return <svg className="community-art" viewBox="0 0 600 230" fill="none" aria-hidden="true">
-    <path d="M0 206h600M0 218h600" stroke="#7ba69c" strokeOpacity=".35" />
-    <path d="M65 199V88l49-25 49 25v111M72 89h83M110 65V42h32" stroke="#91b9a5" strokeWidth="2" />
-    <path d="M83 105h13v18H83zm31 0h13v18h-13zm24 0h13v18h-13zM83 142h13v18H83zm31 0h13v18h-13zm24 0h13v18h-13z" fill="#6f9e8d" fillOpacity=".4" />
-    <path d="M191 199v-92h96v92M180 107l59-45 59 45M207 123h15v22h-15zm47 0h15v22h-15zM226 166h28v33" stroke="#b1d3b4" strokeWidth="2" />
-    <path d="M320 199V58h75v141M331 77h13v18h-13zm26 0h13v18h-13zm-26 34h13v18h-13zm26 0h13v18h-13zm-26 34h13v18h-13zm26 0h13v18h-13z" stroke="#769e94" strokeWidth="2" />
-    <path d="M424 199V119h94v80M415 119l57-37 56 37M441 140h15v20h-15zm33 0h15v20h-15zM457 176h24v23" stroke="#a6c8ac" strokeWidth="2" />
-    <path d="M32 198v-50m0 9c-28-1-27-35-9-42 0-23 36-23 36 0 19 13 9 44-27 42zM559 198v-50m0 9c-28-1-27-35-9-42 0-23 36-23 36 0 19 13 9 44-27 42z" stroke="#729e8c" strokeWidth="2" />
-    <circle cx="470" cy="30" r="14" stroke="#c1d8a4" strokeOpacity=".6" />
-    <path d="M284 42c8-8 15-8 23 0m-11 0c8-8 15-8 23 0" stroke="#8eaea0" strokeLinecap="round" />
+/** A route line drawing itself between stops, with a service vehicle travelling along it. */
+function TransitIllustration() {
+  const route = 'M50 150 C 140 150, 140 60, 230 60 S 340 140, 420 110 S 520 40, 560 70'
+  return <svg className="transit-art" viewBox="0 0 610 190" fill="none" aria-hidden="true">
+    <path d={route} stroke="#ffffff14" strokeWidth="14" strokeLinecap="round" />
+    <path className="route" d={route} stroke="url(#route-gradient)" strokeWidth="5" strokeLinecap="round" />
+    <defs><linearGradient id="route-gradient" x1="0" x2="610" y1="0" y2="0" gradientUnits="userSpaceOnUse"><stop stopColor="#4fbf8f" /><stop offset="1" stopColor="#df5a2b" /></linearGradient></defs>
+    {[[50, 150, 'Reported'], [230, 60, 'Assigned'], [420, 110, 'In progress'], [560, 70, 'Resolved']].map(([x, y, label], index) => <g key={String(label)}>
+      <circle className="stop" style={{ animationDelay: `${0.6 + index * 0.7}s` }} cx={Number(x)} cy={Number(y)} r="9" fill="#0f1a17" stroke={index === 3 ? '#df5a2b' : '#4fbf8f'} strokeWidth="4" />
+      <text x={Number(x)} y={Number(y) + (index % 2 ? -20 : 32)} textAnchor="middle" fill="#8fa59b" fontSize="13" fontWeight="600">{label}</text>
+    </g>)}
+    <circle className="bus" r="5" fill="#e8a92f" style={{ offsetPath: `path("${route}")` }} />
   </svg>
 }
 
@@ -43,20 +45,20 @@ export function AuthPage({ mode = 'login', callback = false }: { mode?: AuthMode
   return <main className="auth-layout">
     <section className="auth-story" aria-label="About CivicFlow">
       <Brand light />
-      <div className="story-content"><span className="story-tag"><span /> COMMUNITY FIRST, ALWAYS</span>
-        <h1>Better services.<br /><span>Stronger<br className="desktop-break" /> communities.</span></h1>
-        <p>A simpler way to raise concerns, follow progress, and help shape the place you call home.</p>
+      <div className="story-content"><span className="story-tag"><span /> Live service updates</span>
+        <h1>Report it once.<br /><span>Watch it<br className="desktop-break" /> get fixed.</span></h1>
+        <p>Every complaint gets a reference, a responsible Officer and a service target, and you see each step as it happens.</p>
         <div className="story-steps">{[
-          { icon: FileText, title: 'Raise a concern', text: 'Tell us what needs attention.' },
-          { icon: LocateFixed, title: 'Stay in the loop', text: 'Follow every step of the journey.' },
-          { icon: CircleCheck, title: 'See the difference', text: 'Better outcomes, together.' },
+          { icon: FileText, title: 'Raise a concern', text: 'Pin it on the map and describe it.' },
+          { icon: LocateFixed, title: 'Routed to an owner', text: 'Assigned to the right Officer instantly.' },
+          { icon: CircleCheck, title: 'See it resolved', text: 'Updates at every step, then rate the result.' },
         ].map(({ icon: Icon, title, text }) => <div className="story-step" key={title}><span className="step-icon"><Icon size={19} aria-hidden="true" /></span><div><strong>{title}</strong><span>{text}</span></div><Check size={15} className="step-check" aria-hidden="true" /></div>)}</div>
       </div>
-      <CommunityIllustration />
+      <TransitIllustration />
       <div className="story-footer"><ShieldCheck size={15} aria-hidden="true" /> Built on trust. Designed for everyone.</div>
     </section>
     <section className="auth-main" aria-label="Account access">
-      <div className="auth-top"><span>PUBLIC SERVICE, MADE SIMPLE</span><span className="secure-label"><LockKeyhole size={13} aria-hidden="true" /> Secure access</span></div>
+      <div className="auth-top"><span>PUBLIC SERVICE, MADE SIMPLE</span><span className="button-row" style={{ alignItems: 'center' }}><ThemeToggle /><span className="secure-label"><LockKeyhole size={13} aria-hidden="true" /> Secure access</span></span></div>
       <div className="auth-card" key={mode}>
         <span className="eyebrow">{copy.eyebrow}</span><h2>{blocked ? 'Your account needs attention.' : copy.title}</h2>
         <p className="auth-description">{blocked ? 'We could not open your workspace. You can retry or sign out.' : copy.description}</p>

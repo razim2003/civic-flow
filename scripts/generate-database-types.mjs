@@ -3,7 +3,7 @@ import { writeFile } from 'node:fs/promises'
 import { createTestDatabase } from '../supabase/tests/harness.ts'
 
 // RPC arguments whose SQL contract gives null a defined meaning.
-const nullableArgs = new Set(['admin_update_user.p_department_id', 'admin_upsert_category.p_id', 'mark_notifications_read.p_notification_ids'])
+const nullableArgs = new Set(['admin_update_user.p_department_id', 'admin_upsert_category.p_id', 'mark_notifications_read.p_notification_ids', 'admin_dispatch_complaint.p_officer_id'])
 const db = await createTestDatabase()
 try {
   const enumRows = (await db.query(`select t.typname name, array_agg(e.enumlabel order by e.enumsortorder) labels from pg_type t join pg_enum e on e.enumtypid=t.oid join pg_namespace n on n.oid=t.typnamespace where n.nspname='public' group by t.typname order by t.typname`)).rows
@@ -28,8 +28,9 @@ try {
   }
   output += '  }\n  Views: { [_ in never]: never }\n  Functions: {\n'
   for (const fn of functions) {
+    if (!(fn.names ?? []).length) { output += `    ${fn.name}: { Args: Record<string, never>; Returns: Json }\n`; continue }
     output += `    ${fn.name}: { Args: {\n`
-    for (const [i, name] of fn.names.entries()) {
+    for (const [i, name] of (fn.names ?? []).entries()) {
       const pgType = fn.types[i].replace('public.', '')
       output += `      ${name}: ${type(pgType)}${nullableArgs.has(`${fn.name}.${name}`) ? ' | null' : ''}\n`
     }

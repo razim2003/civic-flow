@@ -32,6 +32,9 @@ export type Category = z.infer<typeof categorySchema>
 export type Department = z.infer<typeof departmentSchema>
 export const eventSchema = z.object({ id: z.uuid(), complaint_id: z.uuid(), complaint_version: z.number(), event_type: z.string(), remark: z.string().nullable(), created_at: z.string() })
 export type ComplaintEvent = z.infer<typeof eventSchema>
+/** Aggregate, non-identifying figures from public.community_impact(). */
+export const impactSchema = z.object({ total: z.coerce.number(), resolved: z.coerce.number(), in_progress: z.coerce.number(), resolved_last_30_days: z.coerce.number(), avg_resolution_days: z.coerce.number().nullable(), satisfaction: z.coerce.number().nullable() })
+export type Impact = z.infer<typeof impactSchema>
 export const PAGE_SIZE = 10
 export function shortReference(id: string) { return `CF-${id.slice(0, 8).toUpperCase()}` }
 export function displayDate(value: string) {

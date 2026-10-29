@@ -9,7 +9,8 @@ type Report = { id: string; status: string; version: number; assigned_officer_id
 const call = (name: string, args: unknown[], user: string | null = officer) => asUser(db, user, () => db.query<Report>(`select * from public.${name}(${args.map((_, index) => `$${index + 1}`).join(',')})`, args))
 async function create(status = 'submitted', assigned: string | null = null) {
   const report = (await call('submit_complaint', [category, 'A damaged public road near a fictional school.', 'Sample Road', 7, 80, randomUUID()], citizen)).rows[0]
-  if (status !== 'submitted' || assigned) await db.query('update public.complaints set status=$2,assigned_officer_id=$3 where id=$1', [report.id, status, assigned])
+  // Submission now auto-assigns; fixtures set the exact state each scenario needs.
+  await db.query('update public.complaints set status=$2,assigned_officer_id=$3 where id=$1', [report.id, status, assigned])
   return report.id
 }
 beforeAll(async () => {
@@ -36,7 +37,7 @@ describe('CF-08–12 Officer authorization and atomic lifecycle', () => {
     const resolved = (await call('resolve_complaint', [id, '  Road surface repaired and inspected.  ', 6])).rows[0]
     expect(resolved).toMatchObject({ status: 'resolved', resolution_text: 'Road surface repaired and inspected.', resolved_by: officer, version: 7 })
     expect(resolved.resolved_at).not.toBeNull()
-    const events = await db.query<{ event_type: string; actor_id: string; kind: string; recipient_id: string }>('select e.event_type,e.actor_id,n.kind,n.recipient_id from public.complaint_events e join public.notifications n on n.event_id=e.id where e.complaint_id=$1 order by e.complaint_version', [id])
+    const events = await db.query<{ event_type: string; actor_id: string; kind: string; recipient_id: string }>('select e.event_type,e.actor_id,n.kind,n.recipient_id from public.complaint_events e join public.notifications n on n.event_id=e.id where e.complaint_id=$1 and n.recipient_id=$2 order by e.complaint_version', [id, citizen])
     expect(events.rows.map((row) => row.event_type)).toEqual(['submitted', 'reviewed', 'assigned', 'priority_changed', 'started', 'progress_added', 'resolved'])
     expect(events.rows.slice(1).every((row) => row.actor_id === officer && row.recipient_id === citizen)).toBe(true)
     expect(events.rows.at(-1)?.kind).toBe('resolution')

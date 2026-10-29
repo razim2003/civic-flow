@@ -32,7 +32,20 @@ npx playwright test
 
 `npm run test:integration` needs Docker Desktop to be running.
 
-## 7.2 Execution summary (2026-10-29)
+## 7.2 Execution summary (latest run: 2026-10-30, after CR-006)
+
+| Suite | Files | Tests | Passed | Failed |
+| --- | --- | --- | --- | --- |
+| Lint / typecheck / build | — | — | ✔ | — |
+| Unit (Vitest) | 13 | 77 | 77 | 0 |
+| Database integration (PGlite, 15 migrations) | 8 | 138 | 138 | 0 |
+| System (Playwright, Edge) | 5 | 58 | 58 | 0 |
+| HTTP integration (Docker) | 1 | 9 | — | — (not run; Docker not running) |
+| **Total executed** | **26** | **273** | **273** | **0** |
+
+The earlier Sprint 4 run is kept below for history.
+
+### Sprint 4 run (2026-10-29)
 
 Environment: Windows 11, Node.js 22.23.4, Microsoft Edge (Playwright channel `msedge`).
 
@@ -174,6 +187,30 @@ Legend: **+** positive, **−** negative/abuse. Every "Actual" result below was 
 | TC-U-MON-01 | CF-21 | + | Counts and ratings | Open excludes final states; average to 1 decimal; none when no feedback | As expected | Pass | unit: "CF-21 basic monitoring summary > …" |
 | TC-UX-01 | NFR-03 | + | 375×812 viewport; detail and inbox | No horizontal overflow | As expected | Pass | e2e sprint4: "feedback and inbox fit a mobile viewport without horizontal overflow" |
 
+### Dispatch, coverage and service targets (CR-006: CF-23, 24, 25, 21)
+
+| ID | Req | ± | Preconditions / input | Expected result | Actual | Status | Automated test |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| TC-DSP-01 | CF-24 | +/− | Admin opens the Dispatch centre with a complaint in an unstaffed department; dispatches with no reason, then with a reason | Coverage card shows "No Officers"; row flagged unstaffed, unassigned and past target; reason error with no request; then exactly one RPC with version 1 and a success message | As expected | Pass | e2e sprint5: "CR-006 Administrator sees the coverage gap and dispatches a stuck complaint …" |
+| TC-DSP-02 | CF-21, 25 | + | Admin opens Analytics; exports CSV | Unstaffed warning; 67% on target; trend chart; CSV downloaded with dated name | As expected | Pass | e2e sprint5: "CR-006 Administrator analytics shows targets, coverage and exports CSV" |
+| TC-DSP-03 | CF-13, 23, 25 | + | Officer with an auto-assigned complaint | Updates badge "1 unread"; inbox link goes to the Officer detail path; map shows 1 marker; queue shows a "Due in" badge | As expected | Pass | e2e sprint5: "CR-006 Officer sees assignments in Updates, the department map and service targets" |
+| TC-UX-02 | NFR-03 | + | Landing page; toggle theme | Hero and CTA shown; theme switches; no horizontal overflow | As expected | Pass | e2e sprint5: "landing page explains the product and the theme toggle switches to dark mode" |
+| TC-U-SLA-01 | CF-25 | +/− | Targets and states at fixed times | 24/72/168/336 h; on track / due soon / overdue; closed and invalid dates ignored | As expected | Pass | unit: "service-level targets (mirrors private.sla_hours) > …" |
+| TC-U-DSP-01 | CF-24 | +/− | Attention flags; input bounds; messages | Unstaffed/unassigned/overdue flags; reason 10–2,000; refusals explained | As expected | Pass | unit: "CR-006 dispatch rules > …" |
+| TC-U-ANL-01 | CF-21, SR-12 | +/− | Summary maths; CSV with `=HYPERLINK` | Totals and rates correct; cells quoted; formula neutralised | As expected | Pass | unit: "CR-006 analytics > …" |
+| TC-DB-DSP-01 | CF-23 | + | Two Officers; two submissions | One complaint each (balanced); assignee notified; event `auto_assigned` | As expected | Pass | db: "assigns the least-loaded active Officer …" |
+| TC-DB-DSP-02 | CF-23 | − | Only Officer inactive | Unassigned; citizen notified only | As expected | Pass | db: "leaves complaints in an unstaffed department unassigned …" |
+| TC-DB-DSP-03 | CF-23 | + | Identical retry | Same row, same assignee, version 1 | As expected | Pass | db: "keeps idempotent retries from reassigning" |
+| TC-DB-DSP-04 | CF-13 | + | Officer assigns a teammate, then themselves | Teammate notified; self-assignment not notified | As expected | Pass | db: "notifies a newly assigned teammate …" |
+| TC-DB-DSP-05 | CF-24 | + | Dispatch stuck complaint to Water supply with an Officer | Route, assignee and version 2; `transferred` event by admin with reason; citizen and Officer notified; Officer can read it | As expected | Pass | db: "routes a stuck complaint to another department …" |
+| TC-DB-DSP-06 | CF-24 | + | Same-department reassignment; repeat | `assigned` event; repeat is a no-op | As expected | Pass | db: "reassigns within the same department …" |
+| TC-DB-DSP-07 | CF-24 | − | Short reason, mismatched route, foreign/citizen assignee, stale/null version, withdrawn | `reason_required`, `category_unavailable`, `invalid_assignee`, `PT409`, `invalid_input`, `complaint_closed` | As expected | Pass | db: "validates reason, route, assignee, version and final states" |
+| TC-DB-DSP-08 | CF-24 | − | In-progress complaint moved or unassigned | `invalid_transition`; Officer swap within the department allowed | As expected | Pass | db: "keeps work in progress in its department with an assignee" |
+| TC-DB-DSP-09 | CF-24, CF-03 | − | Citizen, Officer, inactive Admin, anonymous | `not_authorized` / permission denied | As expected (4) | Pass | db: "denies dispatch by non-Administrator or anonymous caller …" |
+| TC-DB-DSP-10 | NFR-06 | − | Notification failure during dispatch | Route and version unchanged | As expected | Pass | db: "rolls back the dispatch if a notification cannot be written" |
+| TC-DB-DSP-11 | CF-21, 25 | +/− | Analytics as admin; as citizen, Officer, inactive admin | Coverage, overdue, workload, 6-month trend; others refused | As expected | Pass | db: "gives Administrators coverage …", "denies analytics to …" |
+| TC-DB-DSP-12 | CF-21, NFR-11 | +/− | Community impact as citizen, inactive, anonymous; private helper | Only 6 aggregate keys; inactive/anonymous refused; helper not executable | As expected | Pass | db: "shares only aggregate community impact …", "keeps the private helpers unreachable …" |
+
 ### Administration (CF-14)
 
 | ID | Req | ± | Preconditions / input | Expected result | Actual | Status | Automated test |
@@ -232,6 +269,10 @@ Legend: **+** positive, **−** negative/abuse. Every "Actual" result below was 
 | DEF-10 | Sprint 4 | Database regression suite | n/a (expected) | `foundation.test.ts` failed: feedback and notifications became readable | The guard intentionally asserted "closed until policies ship" | Guard updated to check authorised reads with writes still denied | 119/119 pass |
 | DEF-11 | Sprint 4 | Local set-up | Low (environment) | `vitest` could not start: missing Rolldown native binding | Dependencies installed with Node 20 (project requires ≥ 22.18) | Reinstalled with Node 22; requirement documented | All suites pass |
 | DEF-12 | Sprint 4 | Screenshot review | Low (test) | Inbox fixture showed "Date unavailable" | Malformed fixture timestamp `T010:00` | Fixture fixed. The app's graceful fallback for bad dates is correct behaviour. | TC-NTF-01 pass |
+
+| DEF-13 | Sprint 5 (2026-10-30) | Hosted use / read-only data check | **High** | 4 of 5 open complaints sat in departments with no Officers and could never be handled; the Administrator could not act | Routing assumed every department is staffed; no assignment at submission; Administrator was read-only | CR-006: auto-assignment, Administrator dispatch, coverage flags (migration 015) | TC-DB-DSP-01…10, TC-DSP-01 pass |
+| DEF-14 | Sprint 5 | Screenshot review | Medium | Analytics bars below the fold stayed empty until scrolled into view, so printouts and screenshots under-reported data | Bars animated on scroll-into-view | Bars animate on mount; scroll reveals kept only for decorative sections | TC-DSP-02 pass; screenshots re-reviewed |
+| DEF-15 | Sprint 5 | Screenshot review | Low | Sign-in route illustration clipped its end labels; ticket notches misaligned with the perforation | Coordinates too close to the viewBox edge; notch tied to card bottom | Route moved inward; notches anchored to the perforated line | Visual re-check |
 
 There are no open defects of High or Medium severity.
 

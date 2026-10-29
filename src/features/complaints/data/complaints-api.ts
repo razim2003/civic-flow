@@ -1,5 +1,5 @@
 import { supabase } from '../../../shared/lib/supabase/client'
-import { categorySchema, complaintSchema, departmentSchema, eventSchema, PAGE_SIZE, statuses } from '../model/complaint'
+import { categorySchema, complaintSchema, departmentSchema, eventSchema, impactSchema, PAGE_SIZE, statuses } from '../model/complaint'
 import type { Submission } from '../model/complaint'
 
 const fields = 'id,citizen_id,category_id,department_id,assigned_officer_id,description,location_text,latitude,longitude,status,priority,resolution_text,resolved_at,withdrawal_reason,withdrawn_at,withdrawn_by,version,created_at,updated_at'
@@ -40,6 +40,11 @@ export async function getMySummary(userId: string) {
   for (const result of results) if (result.error) throw result.error
   const counts = results.map((r) => r.count ?? 0)
   return { total: counts.reduce((a, b) => a + b, 0), submitted: counts[0], active: counts[1] + counts[2], resolved: counts[3], withdrawn: counts[4] }
+}
+export async function getCommunityImpact() {
+  const { data, error } = await supabase.rpc('community_impact')
+  if (error) throw error
+  return impactSchema.parse(data)
 }
 export async function getComplaint(id: string) {
   const { data, error } = await supabase.from('complaints').select(fields).eq('id', id).maybeSingle()

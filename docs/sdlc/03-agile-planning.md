@@ -28,6 +28,9 @@ The proposal backlog (§4.1), with IDs, MoSCoW priority, sprint and current stat
 | CF-20 | Complaint category management | Should | 2→4 | Done (2026-10-29) |
 | CF-21 | Dashboard/reports | Could | 4 | Basic monitoring done; enhanced reports not planned |
 | CF-22 | Citizen withdrawal *(approved scope extension)* | Should (team-assigned) | 2 | Done |
+| CF-23 | Automatic workload-balanced assignment *(CR-006)* | Must | 5 | Done |
+| CF-24 | Administrator dispatch centre *(CR-006)* | Must | 5 | Done |
+| CF-25 | Service-level targets and overdue flags *(CR-006)* | Should | 5 | Done |
 | — | Integration/system testing, security, deployment | Sprint 5 scope | 5 | In progress |
 
 ## 3.2 User stories
@@ -57,6 +60,9 @@ Written as "As a ‹role›, I want ‹capability›, so that ‹benefit›." Th
 | US-19 | As an **administrator**, I want to add, rename, route and deactivate service categories, so that the system can grow to new services without code changes. | CF-20 | Should | 5 |
 | US-20 | As a **citizen**, I want to withdraw my unresolved complaint with a reason, so that officers don't spend time on a problem that no longer needs action. | CF-22 | Should* | 5 |
 | US-21 | As an **administrator**, I want summary counts of complaints by status and the average feedback rating, so that I can monitor service performance. | CF-21 | Could | 2 |
+| US-22 | As a **citizen**, I want my complaint to be given to a responsible Officer as soon as I submit it, so that it never waits unnoticed. | CF-23 | Must | 5 |
+| US-23 | As an **administrator**, I want to route and assign complaints that are stuck in departments without Officers, so that every complaint has an owner. | CF-24 | Must | 5 |
+| US-24 | As an **officer**, I want to see which complaints are due soon or overdue, so that I handle urgent work first. | CF-25 | Should | 3 |
 
 \*CF-22 is a user-approved scope extension; see [09-maintenance.md](09-maintenance.md).
 
@@ -109,6 +115,11 @@ Given/When/Then form. Each criterion links to the automated test that checks it 
 - AC3 Names are unique regardless of case. An active category must route to an active department. *(TC-DB-CAT-03)*
 - AC4 A category that already has complaints keeps its department. *(TC-CAT-02, TC-DB-CAT-04)*
 
+**US-22/23 Every complaint has an owner (CR-006)**
+- AC1 Given a department has active Officers, when a citizen submits, then the Officer with the fewest open assignments is assigned and notified. *(TC-DB-DSP-01)*
+- AC2 Given a department has no active Officers, then the complaint is unassigned and appears under *Needs attention* with "No Officers in department". *(TC-DB-DSP-02, TC-DSP-01)*
+- AC3 When an administrator dispatches it with a reason, then department, category and assignee change in one versioned transaction with history and notifications. Work in progress can't leave its department. *(TC-DSP-01, TC-DB-DSP-04…07)*
+
 **US-20 Withdraw complaint**
 - AC1 The owner of a Submitted, Under review or In progress complaint gives a 10–2,000 character reason and confirms. Status becomes **Withdrawn** (final) and the record, evidence and history are kept. *(TC-WD-01, TC-DB-WD-01)*
 - AC2 Resolved or already-withdrawn complaints can't be withdrawn. Other users can't withdraw them. *(TC-WD-04, TC-DB-WD-02)*
@@ -123,12 +134,13 @@ The five sprints are exactly those in the proposal (§4.4). Dates are taken from
 | 2 Complaint Submission | Form, categories, validation, evidence, record creation | Complaint form with map; six categories; idempotent submission; private evidence; My Complaints; CF-22 withdrawal | 2026-10-19 → 21 | [sprint-2.md](../sprint-2.md), [citizen-withdrawal.md](../citizen-withdrawal.md) |
 | 3 Complaint Processing | Officer dashboard, assignment, priority, status, remarks | Officer queues, filters, review/assign/priority/start/progress/transfer; Officer invitations | 2026-10-20 → 21 | [officer-portal.md](../officer-portal.md) |
 | 4 Tracking & Resolution | Tracking, notifications/updates, resolution, feedback | Resolution (2026-10-21); Updates inbox, feedback, category management, monitoring (2026-10-29) | 2026-10-21, 2026-10-29 | [sprint-4.md](../sprint-4.md) |
-| 5 Quality & Release | Integration, system testing, security, defect fixing, deployment | Test report, security assessment, deployment preparation; maintenance CR on arrival | in progress | 07, 08, 09, 10 |
+| 5 Quality & Release | Integration, system testing, security, defect fixing, deployment | CR-006 dispatch/coverage fix, auto-assignment, service targets, analytics, map, redesign with motion and dark mode; test report, security, deployment preparation | 2026-10-29 → 30, in progress | [sprint-5.md](../sprint-5.md), 07–10 |
 
 **Sprint review / retrospective notes** (recorded from the sprint documents):
 
 - Sprint 2 review found an empty category dropdown, because the hosted categories migration hadn't been applied. This led to an explicit "missing setup" UI state and a rule that the hosted database must be checked before each demo.
 - Sprint 3 review: real HTTP concurrency tests found that PostgREST retries SQLSTATE 40001 indefinitely. The correction (PT409) led to adding real-JWT integration tests to the Definition of Done for workflow SQL.
+- Sprint 5 review: hosted use showed 4 of 5 open complaints in departments with no Officers, so they were invisible to everyone able to act. This led to CR-006 (auto-assignment, Administrator dispatch, service targets) being prioritised above deployment.
 - Sprint 4 review: the planned "notification inbox" had been partly delivered as history in Sprint 2/3. The remaining inbox and read-state work was split out explicitly so it wouldn't be over-claimed.
 
 ## 3.5 Task allocation

@@ -29,7 +29,7 @@ describe('CF-04/05/06 complaint submission and CF-07/18 access', () => {
   it('routes a trimmed Citizen report and atomically creates initial history and update', async () => {
     const complaint = (await submit(citizen, randomUUID(), '  Damaged road with several deep potholes  ')).rows[0]
     expect(complaint).toMatchObject({ citizen_id: citizen, department_id: department, category_id: category, status: 'submitted', priority: 'normal', version: 1, description: 'Damaged road with several deep potholes' })
-    const result = await db.query('select e.complaint_version,e.event_type,n.kind,n.recipient_id from public.complaint_events e join public.notifications n on n.event_id=e.id where e.complaint_id=$1', [complaint.id])
+    const result = await db.query('select e.complaint_version,e.event_type,n.kind,n.recipient_id from public.complaint_events e join public.notifications n on n.event_id=e.id where e.complaint_id=$1 and n.recipient_id=$2', [complaint.id, citizen])
     expect(result.rows).toEqual([{ complaint_version: 1, event_type: 'submitted', kind: 'submission', recipient_id: citizen }])
   })
   it('returns the same record on retry and rejects the same key with changed input', async () => {
@@ -122,7 +122,7 @@ describe('CF-16 private evidence reservation/upload/finalization', () => {
     expect((await finalize(evidence.id)).rows[0].state).toBe('attached')
     expect((await db.query('select version from public.complaints where id=$1', [complaint.id])).rows[0]).toEqual({ version: 2 })
     expect((await db.query('select id from public.complaint_events where complaint_id=$1', [complaint.id])).rows).toHaveLength(2)
-    expect((await db.query('select id from public.notifications where complaint_id=$1', [complaint.id])).rows).toHaveLength(2)
+    expect((await db.query('select id from public.notifications where complaint_id=$1 and recipient_id=$2', [complaint.id, citizen])).rows).toHaveLength(2)
     for (const [user, allowed] of [[citizen, true], [other, false], [officer, true], [otherOfficer, false], [admin, true], [inactive, false]] as const) {
       expect((await asUser(db, user, () => db.query('select id from storage.objects where name=$1', [evidence.object_path]))).rows).toHaveLength(allowed ? 1 : 0)
       expect((await asUser(db, user, () => db.query('select id from public.complaint_evidence where id=$1', [evidence.id]))).rows).toHaveLength(allowed ? 1 : 0)

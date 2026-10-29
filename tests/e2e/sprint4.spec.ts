@@ -60,6 +60,8 @@ async function fixture(page: Page, options: Options = {}) {
     }
     if (url.pathname.startsWith('/rest/v1/rpc/')) {
       const name = url.pathname.split('/').at(-1)!, input: Record<string, unknown> = request.postDataJSON()
+      // Read-only aggregates are answered without being recorded as mutations.
+      if (name === 'community_impact') return route.fulfill({ json: { total: 12, resolved: 7, in_progress: 3, resolved_last_30_days: 4, avg_resolution_days: 2.4, satisfaction: 4.5 } })
       calls.push({ name, input })
       if (name === 'submit_feedback') {
         if (options.feedbackConflict) return route.fulfill({ status: 409, json: { code: '23505', message: 'feedback_exists' } })

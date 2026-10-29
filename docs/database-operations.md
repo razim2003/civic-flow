@@ -23,9 +23,9 @@ On 2026-10-21 the user explicitly approved the three reviewed Officer/conflict m
 | `20261020000100_officer_processing.sql` | Protected roster/review/assignment/priority/start/progress/transfer routines and two private helpers; no data backfill |
 | `20261020000200_officer_resolution.sql` | Assigned-Officer resolution with required details/date and atomic history/update |
 | `20261021000100_non_retrying_withdrawal_conflict.sql` | Replaces only the withdrawal routine to return non-retrying `PT409` for stale versions, preserving business rules and existing data |
-| `20261029000100_citizen_feedback.sql` | **Pending approval.** Feedback read policy and owner-only `submit_feedback` RPC |
-| `20261029000200_notification_inbox.sql` | **Pending approval.** Recipient-only notification reads and `mark_notifications_read` RPC |
-| `20261029000300_category_management.sql` | **Pending approval.** Audited `admin_upsert_category` RPC |
+| `20261029000100_citizen_feedback.sql` | Applied 2026-10-29. Feedback read policy and owner-only `submit_feedback` RPC |
+| `20261029000200_notification_inbox.sql` | Applied 2026-10-29. Recipient-only notification reads and `mark_notifications_read` RPC |
+| `20261029000300_category_management.sql` | Applied 2026-10-29. Audited `admin_upsert_category` RPC |
 
 Migrations 004-006 are applied on the hosted project: protected complaint creation, scoped complaint/history/evidence reads, the private Storage bucket and six user-selected prototype category/department routes. Exact SQL, preflight, verification, test limitations and recovery are in [Sprint 2 record](sprint-2.md). Feedback and notification-inbox browser access remains denied.
 

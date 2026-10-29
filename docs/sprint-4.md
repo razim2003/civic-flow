@@ -40,9 +40,26 @@ One regression test failed as designed: `foundation.test.ts` asserted that feedb
 
 Browser tests intercept all Supabase traffic and use fictional data. They prove UI behaviour and request contracts, not hosted authorization. The SQL suite proves the authorization rules inside PostgreSQL using non-privileged roles.
 
-## Hosted migration review — awaiting explicit approval
+## Hosted migration rollout — applied 2026-10-29
 
-**Not applied.** AGENTS.md requires explicit approval for each remote migration. The Supabase connection available in this session also returned *permission denied* for project `xapqfnumcpjckhpdyuxz`, because the connected account can only see a different project. Until these are applied to the hosted project, the deployed backend will refuse the new features. Feedback and the inbox show a "service not available" message, and category saves are rejected. Existing features are unaffected.
+**Applied** to project `xapqfnumcpjckhpdyuxz` on 2026-10-29 after the user gave explicit approval in-session for exactly these three files. The approval followed the review below. The Supabase MCP connection (scoped to this project by `.mcp.json`) now had project access. The Supabase CLI was not linked, so `apply_migration` ran each reviewed file verbatim in order.
+
+| Step | Result |
+| --- | --- |
+| Hash check | Working-tree files are CRLF on Windows. Their LF content matched the three reviewed SHA-256 hashes, as did `git show HEAD:` |
+| Preflight | Remote history 001–011 only. None of the three functions existed. RLS was on for all 9 tables |
+| Baseline (counts) | 6 Auth accounts and 6 profiles (1 active Administrator), 5 complaints, 11 events, 4 evidence rows, 4 Storage objects, 11 notifications, 0 feedback, 6 categories, 6 departments |
+| Apply | 012 → 013 → 014 each reported success |
+| History alignment | The MCP tool recorded generated versions (`20261029174637/174652/174708`). With separate user approval, those 3 `supabase_migrations.schema_migrations` rows were renamed to `20261029000100/200/300`, the same metadata-only change `supabase migration repair` makes, so the CLI history matches the repo. Remote history is now 001–014 |
+| Data checksums | Counts and per-table md5 checksums (complaints, events, evidence, feedback, notifications, categories, departments, profiles, storage objects) were **identical** before and after |
+| Functions | All three are `SECURITY DEFINER`, `search_path=""`, with authenticated EXECUTE and no EXECUTE for `anon` or `public` |
+| Policies/grants | `complaint_feedback_read` and `notifications_read` exist for `authenticated`. Only `authenticated` has SELECT on these tables, and there are no write grants. RLS is still on for all tables |
+| Anonymous REST | `POST /rest/v1/rpc/submit_feedback`, `mark_notifications_read` and `admin_upsert_category` → **401 / 42501**. `GET complaint_feedback` and `notifications` → **401 / 42501** |
+| Security advisors | Nothing new. The expected `authenticated_security_definer_function_executable` WARN now lists 17 RPCs, all of which check authorization themselves. `rls_enabled_no_policy` INFO is for the private audit table (deny-all by design). Leaked-password protection is disabled (an existing Auth setting) |
+
+Not yet done: a signed-in hosted smoke test of feedback, the inbox and category saves with real role accounts. This belongs to the deployment smoke test in [08-deployment.md](sdlc/08-deployment.md).
+
+### Reviewed plan (as approved)
 
 Target: Supabase project `xapqfnumcpjckhpdyuxz` (`https://xapqfnumcpjckhpdyuxz.supabase.co`), which contains real accounts and complaints. Do not reset it or run synthetic journeys there.
 
@@ -54,17 +71,8 @@ Target: Supabase project `xapqfnumcpjckhpdyuxz` (`https://xapqfnumcpjckhpdyuxz.s
 
 Expected data effects: none at installation. Each file is one transaction that adds grants, policies and functions and reloads the PostgREST schema cache. No existing complaint, notification, category, account, evidence or Storage object is changed. Later authorised user actions will insert feedback rows, set `read_at` and create or update categories with audit rows.
 
-Validation before applying: recheck the hashes above, run `supabase db push --linked --dry-run` (it must list exactly these three files) and take read-only baseline counts and checksums with `supabase/operations/inspect-officer-rollout.sql`.
+Planned validation before applying: recheck the hashes above, run `supabase db push --linked --dry-run` (it must list exactly these three files) and take read-only baseline counts and checksums with `supabase/operations/inspect-officer-rollout.sql`.
 
-Validation after applying: confirm migration history, confirm the three functions are `SECURITY DEFINER` with an empty `search_path`, authenticated EXECUTE and no anonymous EXECUTE, confirm RLS is still enabled on all nine tables, confirm unchanged baseline counts and checksums, and confirm that an anonymous REST call to `/rest/v1/rpc/submit_feedback` returns 401/42501.
+Planned validation after applying: confirm migration history, confirm the three functions are `SECURITY DEFINER` with an empty `search_path`, authenticated EXECUTE and no anonymous EXECUTE, confirm RLS is still enabled on all nine tables, confirm unchanged baseline counts and checksums, and confirm that an anonymous REST call to `/rest/v1/rpc/submit_feedback` returns 401/42501.
 
 Recovery: stop using the new screens and apply a reviewed forward corrective migration (for example, a grant-only revoke of EXECUTE). Do not drop tables, reset the database or delete feedback, notifications or audit rows. A data restore needs separate approval and a restorable backup.
-
-To apply after approval, someone with access to the project would use either option:
-
-```bash
-supabase db push --linked --project-ref xapqfnumcpjckhpdyuxz --skip-vault --dry-run
-supabase db push --linked --project-ref xapqfnumcpjckhpdyuxz --skip-vault
-```
-
-or the Supabase MCP `apply_migration` tool from an account that is a member of the project.

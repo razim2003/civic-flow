@@ -134,7 +134,9 @@ Run this on the deployed URL with **fictional demo accounts** (never real citize
 
 | Date | Environment | URL | Commit | Migrations applied | Smoke test | By |
 | --- | --- | --- | --- | --- | --- | --- |
-| — | Production (Vercel) | *to be filled* | | 001–011 (014 pending approval) | | |
+| 2026-10-29 | Supabase DB only | `https://xapqfnumcpjckhpdyuxz.supabase.co` | 22e6c9d | 001–014 (012–014 applied this day; checksums unchanged) | Anonymous REST denial verified | Mohamed Sharfan (with Claude Code) |
+| 2026-10-30 | Supabase (database only) | xapqfnumcpjckhpdyuxz | `sprint-5/dispatch-and-experience` | 001–015 applied | Read-only and anonymous checks passed (see sprint-5.md) | Team + Claude Code |
+| — | Production (Vercel) | *to be filled* | | | | |
 
 ## 8.8 Demonstration script (final evaluation)
 
