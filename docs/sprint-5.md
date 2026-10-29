@@ -77,3 +77,7 @@ Next operational step (a user action, not automated): sign in as the Administrat
 Expected effect at install: none on data. Afterwards, new complaints get auto-assigned, and the Administrator can dispatch the 4 stuck complaints from the Dispatch centre. They are **not** moved automatically.
 
 Recovery: forward-fix only. Revoking EXECUTE on `admin_dispatch_complaint` disables dispatch. A corrective migration that restores the previous `submit_complaint` body disables auto-assignment. No data deletion or reset.
+
+## Demonstration data — 2026-10-30
+
+The user asked for Sri Lankan sample data to check the system. `supabase/demo/sri-lanka-demo.sql` adds fictional Citizens and Officers who cannot sign in, plus 36 complaints across Sri Lankan towns covering every lifecycle state. Everything goes through the real RPCs, and the script was applied to the hosted project with explicit approval. Checksums of the existing data were unchanged. The design, safeguards, removal script and hosted verification are in [Database operations](database-operations.md#demonstration-data-sri-lanka), and the tests are TC-DB-DEMO-01…05 in the [test report](sdlc/07-test-report.md).

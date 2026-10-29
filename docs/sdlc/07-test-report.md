@@ -38,10 +38,10 @@ npx playwright test
 | --- | --- | --- | --- | --- |
 | Lint / typecheck / build | — | — | ✔ | — |
 | Unit (Vitest) | 13 | 77 | 77 | 0 |
-| Database integration (PGlite, 15 migrations) | 8 | 138 | 138 | 0 |
+| Database integration (PGlite, 15 migrations + demo data) | 9 | 147 | 147 | 0 |
 | System (Playwright, Edge) | 5 | 58 | 58 | 0 |
 | HTTP integration (Docker) | 1 | 9 | — | — (not run; Docker not running) |
-| **Total executed** | **26** | **273** | **273** | **0** |
+| **Total executed** | **27** | **282** | **282** | **0** |
 
 The earlier Sprint 4 run is kept below for history.
 
@@ -210,6 +210,16 @@ Legend: **+** positive, **−** negative/abuse. Every "Actual" result below was 
 | TC-DB-DSP-10 | NFR-06 | − | Notification failure during dispatch | Route and version unchanged | As expected | Pass | db: "rolls back the dispatch if a notification cannot be written" |
 | TC-DB-DSP-11 | CF-21, 25 | +/− | Analytics as admin; as citizen, Officer, inactive admin | Coverage, overdue, workload, 6-month trend; others refused | As expected | Pass | db: "gives Administrators coverage …", "denies analytics to …" |
 | TC-DB-DSP-12 | CF-21, NFR-11 | +/− | Community impact as citizen, inactive, anonymous; private helper | Only 6 aggregate keys; inactive/anonymous refused; helper not executable | As expected | Pass | db: "shares only aggregate community impact …", "keeps the private helpers unreachable …" |
+
+### Sri Lankan demonstration data (supabase/demo)
+
+| ID | Req | ± | Preconditions / input | Expected result | Actual | Status | Automated test |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| TC-DB-DEMO-01 | NFR-11 | + | Empty database; run the seed | 10 Citizens and 6 Officers who cannot sign in (`.test` e-mail, no password); Other public services left unstaffed | As expected | Pass | db: "creates fictional login-less people …" |
+| TC-DB-DEMO-02 | CF-04…12, 19, 22, 23 | + | Seed through the workflow RPCs | 36 complaints: 21 resolved, 4 in progress, 3 under review, 5 submitted, 3 withdrawn; 1 transfer; 33 auto-assigned; 19 ratings; 3 unassigned in the unstaffed department | As expected | Pass | db: "creates 36 complaints across the full lifecycle …" |
+| TC-DB-DEMO-03 | NFR-06 | + | Backdated history | Events 1..version with no gaps, in time order; first and last events match created/resolved/withdrawn times; every event notifies the citizen; times within 180 days; coordinates inside Sri Lanka; feedback after resolution | As expected | Pass | db: "keeps every history consistent …" |
+| TC-DB-DEMO-04 | CF-21, 25 | + | Analytics after seeding; Officer reviews a seeded complaint | 6 months of submissions, overdue > 0, some late resolutions; seeded complaint still works with the normal RPC | As expected | Pass | db: "gives analytics six months …", "leaves seeded open complaints workable …" |
+| TC-DB-DEMO-05 | NFR-06 | +/− | Existing Road Officer; re-run; remove while a real complaint is assigned to a demo Officer; remove again | Existing Officer used (no demo Road Officer); re-run changes nothing; removal refused with `demo_data_in_use`; then removes only demo rows and keeps real ones | As expected | Pass | db: "uses the existing Officer …", "is idempotent", "refuses to remove …", "removes only demo data …" |
 
 ### Administration (CF-14)
 
