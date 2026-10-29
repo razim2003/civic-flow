@@ -46,7 +46,7 @@ Detailed engineering records stay where they were written during development. Th
 | Should Have CF-15…CF-20 | Implemented and tested |
 | Could Have CF-21 | Basic read-only monitoring implemented. Enhanced reports are not planned. |
 | Scope extension CF-22 (Citizen withdrawal) | Implemented and recorded as an approved change |
-| CR-006 (dispatch, auto-assignment, service targets, analytics, map, redesign) | Implemented and tested ([sprint-5.md](../sprint-5.md)). Migration 015 is awaiting hosted approval. |
+| CR-006 (dispatch, auto-assignment, service targets, analytics, map, redesign) | Implemented and tested ([sprint-5.md](../sprint-5.md)). Migration 015 applied to the hosted project on 2026-10-30 after explicit approval, with data checksums unchanged. |
 | Hosted database | Migrations 001–014 applied. Sprint 4 migrations 012–014 were applied on 2026-10-29 after explicit approval, with data checksums unchanged (see [sprint-4.md](../sprint-4.md)). |
 | Deployment to Vercel | **Not yet deployed.** The configuration and steps are ready in 08. |
 | Lecturer maintenance change request | **Not yet received.** The process and template are ready in 09. |

@@ -51,9 +51,24 @@ Unchanged: the three roles; Administrators still can't review, start, progress o
 | `npx playwright test` | **58 passed** (5 files), including 4 new journeys: dispatch, analytics with CSV, Officer inbox/map/SLA, landing and theme |
 | `npm run test:integration` | Not run (Docker engine not running) |
 
-## Hosted rollout
+## Hosted rollout — applied 2026-10-30
 
-Target: `xapqfnumcpjckhpdyuxz`. Status: **awaiting explicit approval** (see AGENTS.md). Plan:
+The user explicitly approved this single migration for `xapqfnumcpjckhpdyuxz` after reviewing the target, effects, validation and recovery plan below. It was applied through the project-scoped Supabase MCP connection.
+
+| Step | Result |
+| --- | --- |
+| Baseline | History 001–014; none of the new functions existed; 6 complaints, 13 events, 5 evidence rows, 0 feedback, 13 notifications, 6 categories, 6 departments, 6 profiles, 5 Storage objects, 6 audit rows, each with an md5 checksum |
+| Apply | `apply_migration` with the file content verbatim → success |
+| History | The generated version `20261029190552` was renamed to `20261029000400` (a metadata-only change, as planned), so remote history 001–015 matches the repo |
+| Data | All counts and md5 checksums **identical** before and after |
+| Functions | `submit_complaint`, `admin_dispatch_complaint`, `admin_analytics`, `community_impact`, `pick_officer` and `record_officer_event` are `SECURITY DEFINER` with `search_path=""`. `sla_hours` is invoker with an empty `search_path`. Public RPCs: authenticated EXECUTE only. Private helpers: no browser EXECUTE. RLS is still on for every table |
+| Anonymous REST | `admin_dispatch_complaint`, `admin_analytics` and `community_impact` → **401 / 42501** |
+| Live read-only check | `admin_analytics()` run as the active Administrator inside a rolled-back transaction reports Public transport, Waste management and Water supply as unstaffed, with 4 unassigned open complaints, matching the problem report |
+| Advisors | No new finding types. The expected definer-RPC WARN now lists 20 functions (all authorise internally). The private audit table INFO is deny-all by design. **Leaked-password protection is disabled** (an Auth setting; enabling it is recommended) |
+
+Next operational step (a user action, not automated): sign in as the Administrator, open **Dispatch centre**, and route or assign the 4 stuck complaints, or invite Officers for the unstaffed departments.
+
+### Plan as approved
 
 1. Read-only baseline: counts and md5 checksums of all application tables and Storage object metadata.
 2. Apply migration 015 verbatim, then rename its history row to `20261029000400`.
