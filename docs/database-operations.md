@@ -57,6 +57,34 @@ With Docker available and a verified Supabase CLI, start a fresh local instance 
 
 Until then, `npm.cmd run test:db` tests actual PostgreSQL grants, RLS, triggers and RPCs inside PGlite, with fixture Auth identities. `npm.cmd run db:types` derives table/enum/RPC types from the same migrations; this repository generator intentionally exposes table mutations as `never` to discourage raw client writes. It is not a hosted Supabase CLI type export. The test harness is not application authentication code and is never bundled into the frontend.
 
+## Demonstration data (Sri Lanka)
+
+`supabase/demo/sri-lanka-demo.sql` is data, not a migration. It is one atomic, idempotent `DO` block. Run it as the database owner, for example with the Supabase SQL editor, the MCP `execute_sql` tool or `psql -f`. Running it against a hosted project needs the same explicit approval as any other remote write.
+
+| What it creates | Detail |
+| --- | --- |
+| People | 10 fictional Citizens (`…000101`–`…000110`) and Officers (`…000201`–`…000206`) only for departments that have **no** active Officer. Ids start `5e1a0000-0000-4000-8000-`, e-mails end `@demo.civicflow.test`, `encrypted_password` is empty and `raw_user_meta_data.demo` is `true`, so nobody can sign in as them. "Other public services" is never staffed, which leaves a coverage gap for the Dispatch centre. |
+| Complaints | 36 complaints from real Sri Lankan towns and roads, using approximate public coordinates. 21 are resolved (19 rated), 4 in progress, 3 under review, 5 submitted (3 of them unassigned in the unstaffed department) and 3 withdrawn. One shows an Officer transfer from Road maintenance to Water supply. |
+| How | The script calls the real RPCs (`submit_complaint`, `review_complaint`, `set_complaint_priority`, `start_complaint`, `add_progress`, `transfer_complaint`, `assign_complaint`, `resolve_complaint`, `withdraw_complaint`, `submit_feedback`) as each fictional actor, so auto-assignment, versions, history and notifications follow the live rules. Only the timestamps are then moved back up to about 6 months. Departments that already have Officers use them: their queues receive the demo work. |
+
+Removal: `supabase/demo/remove-sri-lanka-demo.sql` deletes only demo complaints and their history, notifications and feedback, then the demo profiles and Auth users. It is **destructive** and needs explicit approval. It refuses to run, and deletes nothing, while real records depend on a demo person (for example a real complaint auto-assigned to a demo Officer). Reassign that work in the Dispatch centre first.
+
+Tests: `supabase/tests/demo-data.test.ts` runs both scripts on fresh databases. It checks the lifecycle mix, history and notification consistency, Sri Lankan coordinates, the analytics trend, idempotency, reuse of existing Officers, and that removal is refused while in use and otherwise leaves real rows intact.
+
+### Hosted application — 2026-10-30
+
+The user approved adding the data to `xapqfnumcpjckhpdyuxz`.
+
+1. A dry run on the hosted database aborted on purpose at the end, so it was fully rolled back. A follow-up query confirmed 0 demo rows remained.
+2. The baseline md5 checksums were taken: complaints 6, events 17, notifications 18, feedback 0, profiles 7, categories 6, departments 6, Auth users 7.
+3. The script ran once.
+4. After the run, every baseline checksum of the pre-existing rows was **identical**.
+5. The demo rows added were 14 people (10 Citizens; Officers for Water supply ×2, Sanitation and Public transport), 36 complaints, 157 events and 190 notifications (8 unread). There were also 19 ratings averaging 3.84.
+6. No complaint has an event count that differs from its version, and no timestamp is in the future or older than 180 days.
+7. Administrator analytics show submissions in every one of the last six months, 9 overdue open complaints and 3 unassigned complaints in Other public services, which has no Officers.
+
+Road maintenance and Waste management already had Officers ("officer test" and "arkam"), so they handle those demo complaints.
+
 ## Officer migration/account setup — 2026-10-20
 
 The specifically designated, invitation-verified first Administrator is active and its operator bootstrap is audited. The Administrator-only Officer invitation Edge Function is deployed. Auth redirects/minimum password settings are configured for the local app; existing TOTP/OTP/email-frequency and Storage global settings are preserved. The three workflow migrations were prepared for review, then specifically approved and applied on 2026-10-21. Review exact SQL, effects, concurrency/access contracts, recovery and final verification in [Officer portal notes](officer-portal.md). No existing migration was edited in place.

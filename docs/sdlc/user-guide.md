@@ -63,6 +63,15 @@ Resolved and Withdrawn complaints can be read but not changed.
 - **Create Officer account:** enter a name, email and department. The person receives an invitation email and chooses their own password.
 - **Service categories:** **New category** or **Edit** a category's name, description and receiving department, and set *Available for new complaints* ([screenshot](screens/13-admin-service-categories.png)). Categories are never deleted. Deactivate one to hide it from new complaints. A category that already has complaints keeps its department: create a new category instead.
 
+## Demonstration data
+
+The shared demo project contains fictional Sri Lankan complaints, for example from Nugegoda, Kandy, Jaffna, Galle and Trincomalee, filed by fictional citizens such as *Nimal Perera* and *Kavitha Sivakumar*. They are there so every screen has something to show:
+- Officer queues with service-target badges.
+- An Administrator Dispatch centre with an unstaffed department.
+- Six months of analytics.
+
+These demo people cannot sign in. Use your own test accounts to try the workflows.
+
 ## Troubleshooting
 
 | Message | What it means / what to do |

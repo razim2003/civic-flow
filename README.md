@@ -12,6 +12,10 @@ The approved proposal is the requirements baseline. The user's selected stack an
 
 Complaints are now auto-assigned to the least-loaded Officer of the routed department, and Administrators have a Dispatch centre for complaints stuck in departments with no Officers. The release also adds service-level targets, an analytics dashboard with CSV export, an Officer department map, community-impact figures, a public landing page, and a full redesign with motion and dark mode. See [Sprint 5](docs/sprint-5.md).
 
+## Demonstration data (Sri Lanka)
+
+[`supabase/demo/sri-lanka-demo.sql`](supabase/demo/sri-lanka-demo.sql) fills a project with fictional Sri Lankan data: 10 citizens, Officers for departments that have none, and 36 complaints from Colombo, Kandy, Jaffna, Galle, Matara, Trincomalee and other towns over the last six months, in every lifecycle state with history, notifications and ratings. It runs everything through the real workflow functions, creates people who cannot sign in, never changes existing rows and is removed with [`remove-sri-lanka-demo.sql`](supabase/demo/remove-sri-lanka-demo.sql). It was applied to the hosted project on 2026-10-30 with the user's approval. See [Database operations](docs/database-operations.md#demonstration-data-sri-lanka).
+
 ## SDLC evidence pack
 
 The course-ready documentation for all ten SDLC stages (problem definition, process, Agile planning, requirements and traceability, design/UML, implementation, test report, deployment, maintenance, security, contribution log and user guide) is in [docs/sdlc](docs/sdlc/README.md).
