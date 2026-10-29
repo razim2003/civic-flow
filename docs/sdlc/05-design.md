@@ -312,8 +312,47 @@ The UI was prototyped directly as working screens (no separate wireframing tool)
 | 11 | Resolved complaint (closed processing) | Officer | [11-officer-resolved.png](screens/11-officer-resolved.png) |
 | 12 | Administrator overview with monitoring | Administrator | [12-admin-overview-monitoring.png](screens/12-admin-overview-monitoring.png) |
 | 13 | Service categories | Administrator | [13-admin-service-categories.png](screens/13-admin-service-categories.png) |
+| 14 | Dispatch centre (coverage, needs-attention filter) | Administrator | [14-admin-dispatch-centre.png](screens/14-admin-dispatch-centre.png) |
+| 15 | Service analytics (light / dark) | Administrator | [15-admin-analytics.png](screens/15-admin-analytics.png), [17-admin-analytics-dark.png](screens/17-admin-analytics-dark.png) |
+| 16 | Department map | Officer | [16-officer-department-map.png](screens/16-officer-department-map.png) |
+| 0 | Public landing page | Visitor | [00-landing.png](screens/00-landing.png) |
 
 UI principles: one primary action per screen; plain-language status names; every form field labelled with its hint and error text; status shown as both text and colour; a skip-link and visible focus; and all user-supplied text rendered as plain text, never HTML.
+
+### SD-4 Auto-assignment and Administrator dispatch (CR-006)
+
+```mermaid
+sequenceDiagram
+  actor C as Citizen
+  actor A as Administrator
+  participant S as submit_complaint
+  participant P as private.pick_officer
+  participant X as admin_dispatch_complaint
+  participant DB as PostgreSQL
+  C->>S: submit (category, description, location)
+  S->>DB: advisory lock 15/1761, then lock Citizen
+  S->>P: least-loaded active Officer in routed department
+  alt an Officer exists
+    P-->>S: officer id
+    S->>DB: INSERT complaint (assigned), event, notify Citizen and Officer
+  else department has no Officers
+    P-->>S: null
+    S->>DB: INSERT complaint (unassigned), event, notify Citizen
+    A->>X: dispatch(department, category, officer, version, reason)
+    X->>DB: lock Administrator, Citizen, complaint, check version
+    X->>DB: UPDATE route/assignee, event transferred or assigned, notify Citizen and Officer
+  end
+```
+
+### Visual design system
+
+The redesign uses a deliberate "civic signal" language rather than generic dashboard styling:
+
+- **Palette and type:** warm paper surfaces, deep municipal green, and signal orange for anything that needs action. Bricolage Grotesque for headings and Public Sans for body text (self-hosted, so the strict CSP stays intact).
+- **Complaints as service tickets:** a dashed perforation and notches.
+- **Progress as a transit line:** the line fills between stations.
+- **Motion:** page transitions, staggered lists, count-up figures and drawing route lines. All of it is disabled under `prefers-reduced-motion`.
+- **Dark mode:** selected from the same tokens, not inverted. Chart series use a palette validated for both modes.
 
 ## 5.8 Design decisions and justification
 
@@ -330,4 +369,6 @@ UI principles: one primary action per screen; plain-language status names; every
 | **Categories deactivated, never deleted; referenced department immutable** | Hard delete / free edit | Historic complaints must keep their original routing and meaning. |
 | **Leaflet + OpenStreetMap** with numeric coordinate fallback | Google Maps | No API key or cost. Accessible fallback when tiles fail. The OSM attribution policy is respected. |
 | **Vercel** static hosting | Netlify, GitHub Pages | Simple Vite deployment, SPA rewrites and security headers configured in `vercel.json`. |
+| **Auto-assignment + Administrator dispatch** (CR-006) | Manual pick-up only; giving Administrators full workflow rights | Guarantees an owner whenever staff exist, and gives a narrow, audited escape hatch when they don't, without making Administrators process complaints. |
+| **`motion` library + CSS tokens** | Hand-written CSS only; heavy UI kits | Declarative, interruptible animations that respect reduced motion. Design tokens keep light and dark themes consistent. |
 | **Vitest + PGlite + Playwright** | Jest only, manual testing | Tests each layer: pure rules, real SQL/RLS inside PostgreSQL, and user journeys in a real browser. |

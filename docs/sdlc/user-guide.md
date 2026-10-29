@@ -49,9 +49,14 @@ Officer accounts are created by an Administrator. You'll receive an invitation e
    - **Resolve complaint** *(assigned Officer only)*: enter the resolution details, tick the confirmation and save ([screenshot](screens/11-officer-resolved.png)).
 4. If someone else changed the complaint while you were viewing it, you'll see a message asking you to **Refresh**. Your text is kept.
 
+New complaints are **assigned automatically** to the Officer in your department with the fewest open complaints, and you'll get an **Updates** notification. Badges such as *Due in 2 days* or *Overdue by 1 day* show each complaint's service target (urgent 1 day, high 3, normal 7, low 14). **Department map** shows open complaints by priority.
+
 Resolved and Withdrawn complaints can be read but not changed.
 
 ## Administrators
+
+- **Dispatch centre:** coverage cards show each department's Officers, open and unassigned complaints, and departments with **no Officers** are highlighted. *Needs attention* lists complaints that are unstaffed, unassigned or past their service target. Choose **Dispatch**, pick the department, category and (optionally) an Officer, explain why, and **Confirm dispatch**. The citizen sees your reason in their history. Work already in progress can be reassigned to another Officer of the same department, but can't change department.
+- **Analytics:** service performance, coverage, Officer workload, satisfaction and a 6-month trend. Use **Export CSV** to download the figures.
 
 - **Overview** shows complaint counts by status, how many are open, and the average feedback rating ([screenshot](screens/12-admin-overview-monitoring.png)). Monitoring is read-only.
 - **User management:** search users, then use **Edit access** to change name, role, department (required for Officers) or active status. The system always keeps at least one active Administrator. An Officer's open assignments must be reassigned before their access changes.

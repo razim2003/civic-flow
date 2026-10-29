@@ -28,6 +28,7 @@ Classification definitions: **corrective** fixes a defect; **adaptive** responds
 | CR-003 | Administrator-created Officer accounts (CF-14) | Project owner, 2026-10-20 | Perfective (+ preventive security) | Implemented, applied, tested |
 | CR-004 | "Use my current location" and closer default map (CF-04) | Project owner, 2026-10-21 | Perfective (usability) | Implemented, tested |
 | CR-005 | **Lecturer-provided change request** | Lecturer, *date* | *to classify* | **Awaiting request** |
+| CR-006 | Every complaint must reach a responsible Officer (auto-assignment, dispatch, service targets) and product completion/redesign | Project owner after hosted testing, 2026-10-30 | Corrective (coverage defect) + perfective | Implemented and tested locally; hosted migration awaiting approval |
 
 ## 9.3 Worked change requests
 
@@ -67,6 +68,25 @@ Classification definitions: **corrective** fixes a defect; **adaptive** responds
 - **Request:** add a current-location shortcut and open the map over Southern Province.
 - **Impact:** frontend only (`shared/location`). No database change. Explicitly **not** GPS tracking: it is one-shot and opt-in, and nothing extra is stored.
 - **Tests:** 8 browser journeys (TC-LOC-01/02).
+
+### CR-006 Complaint coverage and dispatch — corrective + perfective
+
+- **Problem (found in use):** complaints are routed to a department by category, and only that department's Officers could act. Departments with no Officers silently collected complaints. The hosted data showed 4 of 5 open complaints stuck this way. The Administrator could see them but had no permission to act.
+- **Classification:** *corrective* for the coverage defect (the system failed its own objective O3, "enable officers to manage … complaints"), and *perfective* for analytics, map, landing page and redesign.
+- **Affected requirements:** CF-09, CF-13, CF-21, and new CF-23/24/25. NFR-03 (usability) is affected by the redesign.
+- **Impact analysis:**
+
+  | Area | Impact |
+  | --- | --- |
+  | Requirements | 3 new FRs, 3 new user stories, new UC-15 |
+  | Design | SD-4 sequence; Administrator gains a narrow, audited dispatch permission (still no processing rights); SLA table; new visual design system |
+  | Database | Migration 015: replaced `submit_complaint` and `record_officer_event`; new `admin_dispatch_complaint`, `admin_analytics`, `community_impact` and two private helpers. No table changes. |
+  | Code | New `dispatch/`, `analytics/` and `landing/` features; Officer map; SLA badges; shared motion/theme/stat components; restyled every screen |
+  | Tests | +15 database, +8 unit, +4 browser tests. 5 database assertions updated because the assigned Officer now also receives a notification. |
+  | Docs | Requirements, RTM, backlog, design, test report, security, user guide, sprint-5 record |
+
+- **Estimate:** about 21 story points (one sprint for one developer pair).
+- **Approach:** a new migration (never editing applied ones), a feature branch, full regression, then a hosted rollout after explicit approval. Existing stuck complaints are **not** moved automatically: the Administrator dispatches them with a reason, so the citizen sees why.
 
 ## 9.4 Lecturer change request — template (CR-005)
 

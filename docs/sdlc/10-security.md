@@ -27,6 +27,7 @@ Likelihood (L) and impact (I) are rated 1 (low) to 3 (high); risk = L × I. "Res
 | T7 | Weak authentication | Short or reused passwords; account enumeration via recovery | 2 | 2 | 4 | 12-character minimum; email verification; generic recovery response; Supabase Auth rate limits | 2 |
 | T8 | Secret leakage | A service-role key or DB password bundled into the frontend or committed to Git | 1 | 3 | 3 | Only `VITE_` public URL and publishable key; the env validator rejects `sb_secret_` keys; `.env*` git-ignored; the service key only inside the Edge Function runtime | 1 |
 | T9 | Denial of service / spam | Mass complaint submission or repeated requests | 2 | 2 | 4 | Auth required for all writes; bounded inputs and pages; idempotent submission; platform rate limits | 3 (no app-level rate limit) |
+| T11 | Tampering (CSV injection) / disclosure via analytics | A category name like `=HYPERLINK(...)` runs when an exported CSV is opened; non-admins call the analytics RPC | 1 | 2 | 2 | CSV cells are quoted and formula prefixes neutralised; `admin_analytics` checks a live active Administrator; `community_impact` returns aggregates only | 1 |
 | T10 | Repudiation | An Officer or Admin denies making a change | 2 | 2 | 4 | Append-only `complaint_events` with actor and time; private `admin_audit_events` with before/after values | 1 |
 
 ## 10.3 Security requirements
@@ -44,6 +45,7 @@ Likelihood (L) and impact (I) are rated 1 (low) to 3 (high); risk = L × I. "Res
 | SR-09 | No secret credential is present in source, the build or browser configuration. | T8 | TC-U-AUTH-01 ("rejects a secret key …"), `.gitignore` |
 | SR-10 | All administrative and workflow changes are attributable. | T10 | TC-DB-ADM-02, TC-DB-CAT-01, TC-DB-OFF-01 |
 | SR-11 | The last active Administrator cannot be removed, even concurrently. | T1 | TC-DB-ADM-03, TC-INT-08 |
+| SR-12 | Dispatch is limited to active Administrators, is version-checked, audited and notified; analytics are Administrator-only; aggregates never identify citizens. | T1, T3, T11 | TC-DB-DSP-04…12, TC-U-ANL-01 |
 
 ## 10.4 Implemented controls (demonstrable)
 
