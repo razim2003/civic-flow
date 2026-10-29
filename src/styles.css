@@ -129,3 +129,11 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 
 .officer-guidance { padding: 12px 15px; border-left: 3px solid #8caf91; background: #f5f8f0; color: #4f6b4e; font-size: 12px; line-height: 1.8; }
 @media (min-width: 761px) and (max-width: 1100px) { .officer-filter-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.officer-filters form { flex-wrap: wrap; } }
+
+/* Sprint 4: notification inbox, feedback and category administration */
+.nav-count { margin-left: auto; min-width: 20px; padding: 2px 6px; border-radius: 999px; background: #2b5f4b; color: #fff; font-size: 10px; font-weight: 600; text-align: center; }
+.notification-list { list-style: none; margin: 16px 0 0; padding: 0; }.notification-list li { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: start; padding: 16px 0; border-bottom: 1px solid #edf0e6; }.notification-list li .badge { margin-left: 8px; }.notification-list .muted { margin: 2px 0 0; }.notification-list .text-link { margin: 0; }.notification-unread { background: #fafcf6; }.notification-detail { margin: 6px 0 0; font-size: 12px; color: #4d5c43; white-space: pre-wrap; overflow-wrap: anywhere; }
+.rating-stars { display: inline-flex; gap: 2px; color: #c9cfbf; vertical-align: middle; }.rating-stars .star-filled { color: #c48a1b; fill: #e4b04a; }
+.rating-choice { border: 0; padding: 0; margin: 14px 0; display: grid; gap: 8px; }.rating-choice legend { font-size: 12px; font-weight: 600; margin-bottom: 8px; }.rating-choice label { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #e2e7db; border-radius: 8px; font-size: 12px; cursor: pointer; }.rating-choice label.rating-selected { border-color: #6f9a74; background: #f3f8ee; }.rating-choice input { accent-color: #2b5f4b; }
+.feedback-summary { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+@media (max-width: 760px) { .notification-list li { grid-template-columns: 1fr; }.notification-list li > .card-icon { display: none; } }

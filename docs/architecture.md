@@ -55,6 +55,8 @@ This is the target tree. Sprint 1 implements auth, profiles, admin access manage
 
 Sprint 2 implements `complaints/`, `evidence/` and shared location controls. Complaint category/department reads currently live in the complaint data adapter and its models; a separate category-admin module will own future maintenance RPC/UI. Complaint pages compose only the public evidence interface. Shared resource hooks ignore late responses after a newer read/unmount; protected content unmounts on logout/account change. Background access checks on tab return preserve an active draft while still failing closed on a missing/inactive profile or failed profile read. No global query-state dependency is introduced.
 
+Sprint 4 adds `feedback/`, `notifications/` (with a lightweight `badge` entry used by the app shell) and `categories/`, and an Administrator monitoring overview in `admin/`.
+
 The Officer increment implements assignment/workflow/queue in one layered `officer/` feature, preserving the original team ownership in the roadmap. Separate `assignment/`, `workflow/` and `officer-workspace/` directories remain target boundaries if those modules grow; they are not duplicated now. `officer/` composes the complaint feature's public detail/card/model interfaces through a render slot. Complaint code never imports Officer internals. Every intent has a narrow data adapter and its own SQL function.
 
 Each feature uses only the layers it needs:

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
+import { capture } from './capture'
 
 const id = '00000000-0000-4000-8000-000000000001'
 const now = Math.floor(Date.now() / 1000)
@@ -49,6 +50,7 @@ test('protected URLs redirect to sign-in without a session', async ({ page }) =>
   // Allow cold Vite compilation before checking the completed redirect.
   await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible({ timeout: 15000 })
   await expect(page).toHaveURL(/\/login$/)
+  await capture(page, '01-sign-in')
   await expect(page.getByRole('link', { name: 'User management', exact: true })).toHaveCount(0)
 })
 test('registration validates input and shows email verification without accepting a role', async ({ page }) => {

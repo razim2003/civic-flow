@@ -112,6 +112,10 @@ Run `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run test`, `npm.cmd ru
 
 Definition of done for each module: required acceptance behavior, server-enforced authorization, bounded validation, meaningful allow/deny tests, accessible loading/error/empty states, updated docs/types/migrations where applicable, and owner review.
 
+## Sprint 4 completion — 2026-10-29
+
+CF-19 feedback, CF-13 notification inbox/read state and CF-20 category maintenance are implemented in that roadmap order, each with its own migration (20261029000100/200/300), RLS/RPC database tests, unit tests and browser journeys; a read-only CF-21 monitoring overview reuses existing Administrator read access. Ownership is unchanged: 1731 Citizen UI, 1757 workflow data, 1761 database/admin, 1710 category UX, 1776 verification. Hosted rollout is pending explicit approval. Sprint 5 continues with deployment, the deployed smoke test and the lecturer's change request. See [Sprint 4](sprint-4.md) and the [SDLC evidence pack](sdlc/README.md).
+
 ## Officer increment — 2026-10-20
 
 Sprint 3 Officer queue/assignment/priority/review/start/progress/transfer source is implemented, followed by the separately versioned CF-12 resolution operation from Sprint 4. The user refined CF-14 to require Administrator-created Officer invitations; the server-only invitation function and recipient password setup are implemented, and the designated verified first Administrator was activated with an audit event. The original ownership above is retained. Exact SQL and operational status are in [Officer portal notes](officer-portal.md). The user specifically approved hosted migrations 20261020000100/20261020000200/20261021000100 on 2026-10-21; all three are applied with unchanged existing data checksums, restricted routine grants and anonymous API denial verified. CF-19 feedback, a notification inbox/read state and CF-20 category maintenance remain explicit backlog; this does not mark Sprint 4 complete.

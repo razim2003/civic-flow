@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
+import { capture } from './capture'
 import type { Complaint } from '../../src/features/complaints'
 
 const officer = '00000000-0000-4000-8000-000000000001', citizen = '00000000-0000-4000-8000-000000000002'
@@ -86,7 +87,12 @@ async function save(page: Page, action: string, button: string) {
 test('Officer reviews, assigns, prioritizes, starts, updates and resolves a complaint', async ({ page }, testInfo) => {
   const state = await fixture(page); await login(page)
   await page.screenshot({ path: testInfo.outputPath('officer-overview.png'), fullPage: true })
+  await capture(page, '08-officer-overview')
+  await page.getByRole('link', { name: 'Department complaints', exact: true }).click()
+  await expect(page.locator('.complaint-card')).toHaveCount(1)
+  await capture(page, '09-officer-department-queue')
   await detail(page)
+  await capture(page, '10-officer-process-complaint')
   await expect(page.getByLabel('Supporting files')).toHaveCount(0)
   await save(page, 'review', 'Begin review')
   await page.getByLabel('Action', { exact: true }).selectOption('assign')
@@ -112,6 +118,7 @@ test('Officer reviews, assigns, prioritizes, starts, updates and resolves a comp
   expect(state.calls.map((call) => call.name)).toEqual(['review_complaint', 'assign_complaint', 'set_complaint_priority', 'start_complaint', 'add_progress', 'resolve_complaint'])
   expect(state.calls.map((call) => call.input.p_expected_version)).toEqual([1, 2, 3, 4, 5, 6])
   await page.screenshot({ path: testInfo.outputPath('officer-resolved.png'), fullPage: true })
+  await capture(page, '11-officer-resolved')
 })
 test('assigned queue and filters use department and assignment scopes', async ({ page }) => {
   const state = await fixture(page); state.report.assigned_officer_id = officer

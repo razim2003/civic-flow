@@ -6,6 +6,7 @@ import { Link, useParams } from 'react-router-dom'
 import { z } from 'zod'
 import { useAuth } from '../../auth'
 import { EvidencePanel } from '../../evidence'
+import { FeedbackPanel } from '../../feedback'
 import { Notice } from '../../../shared/ui/Form'
 import { useComplaintDetail } from '../application/useComplaints'
 import { complaintMessage } from '../model/message'
@@ -31,6 +32,7 @@ function Detail({ id, backTo = '/complaints', backLabel = 'My complaints', rende
       {complaint.status === 'withdrawn' && <section className="panel withdrawn-details"><h2>Withdrawal details</h2><p className="complaint-description">{complaint.withdrawal_reason}</p>{complaint.withdrawn_at && <p className="muted">Withdrawn on {displayDate(complaint.withdrawn_at)}</p>}<p className="muted">The complaint and supporting evidence are retained in your history.</p></section>}
       {profile?.role === 'citizen' && profile.id === complaint.citizen_id && canWithdraw(complaint.status) && <WithdrawalPanel key={`withdrawal-${complaint.id}`} id={complaint.id} version={complaint.version} refreshing={state.loading} onWithdrawn={state.reload} />}
       {complaint.status === 'resolved' && <section className="panel resolution-panel"><h2>Resolution</h2><p className="complaint-description">{complaint.resolution_text}</p>{complaint.resolved_at && <p className="muted">Resolved on {displayDate(complaint.resolved_at)}</p>}</section>}
+      {complaint.status === 'resolved' && <FeedbackPanel key={`feedback-${complaint.id}`} complaintId={complaint.id} canSubmit={profile?.role === 'citizen' && profile.id === complaint.citizen_id} />}
       {renderActions?.(complaint, state.reload, state.loading)}
       <EvidencePanel key={`evidence-${id}`} complaintId={id} canUpload={profile?.role === 'citizen' && profile.id === complaint.citizen_id && complaint.status === 'submitted'} onUploaded={() => void state.reload()} />
     </div><section className="panel timeline-panel"><h2>Complaint history</h2><p className="muted">Recorded updates from your complaint’s journey.</p><ol className="complaint-timeline">{events.map((event) => <li key={event.id}><span className="timeline-dot" /><div><strong>{eventLabels[event.event_type] ?? 'Complaint updated'}</strong><time dateTime={event.created_at}>{displayDate(event.created_at)}</time>{event.remark && <p>{event.remark}</p>}</div></li>)}</ol>{!events.length && <p className="muted">No updates have been recorded yet.</p>}</section></div>
