@@ -1,6 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
+import { applyTheme, readTheme } from './shared/ui/theme'
+
+applyTheme(readTheme())
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Missing application root')

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type { Complaint } from '../model/complaint'
 import { ArrowLeft, CalendarDays, Check, MapPin, RefreshCw } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
@@ -8,6 +8,7 @@ import { useAuth } from '../../auth'
 import { EvidencePanel } from '../../evidence'
 import { FeedbackPanel } from '../../feedback'
 import { Notice } from '../../../shared/ui/Form'
+import { SlaBadge } from '../../../shared/ui/SlaBadge'
 import { useComplaintDetail } from '../application/useComplaints'
 import { complaintMessage } from '../model/message'
 import { displayDate, eventLabels, shortReference, progressStatuses, statusLabels, canWithdraw } from '../model/complaint'
@@ -25,8 +26,9 @@ function Detail({ id, backTo = '/complaints', backLabel = 'My complaints', rende
   if (!state.data) return <section className="panel"><h1>Complaint unavailable</h1><p>This complaint does not exist or is not available to your account.</p><Link className="text-link" to={backTo}>Back to {backLabel}</Link></section>
   const { complaint, events, categories, departments } = state.data
   const stage = complaint.status === 'withdrawn' ? -1 : progressStatuses.indexOf(complaint.status)
+  const progressStyle: CSSProperties & { '--progress': number } = { '--progress': Math.max(0, stage) / (progressStatuses.length - 1) }
   return <><Link className="back-link page-back" to={backTo}><ArrowLeft size={15} aria-hidden="true" />{backLabel}</Link><div className="page-heading heading-with-action"><div><span className="eyebrow">{shortReference(complaint.id)}</span><h1>{categoryLabel(categories.find((category) => category.id === complaint.category_id)?.name ?? 'Public service complaint')}</h1><p className="detail-date"><CalendarDays size={14} aria-hidden="true" />Submitted {displayDate(complaint.created_at)}<span>·</span>{departments.find((department) => department.id === complaint.department_id)?.name ?? 'Public service team'}</p></div><button className="button button-secondary" disabled={state.loading} onClick={() => void state.reload()}><RefreshCw size={15} aria-hidden="true" />Refresh</button></div>
-    <section className="panel status-panel"><div className="section-title-row"><h2>Complaint progress</h2><StatusBadge status={complaint.status} /></div>{complaint.status === 'withdrawn' ? <p className="muted">This complaint was withdrawn by its owner. Further processing has stopped.</p> : <ol className="progress-steps">{progressStatuses.map((status, index) => <li key={status} className={index <= stage ? 'step-reached' : ''} aria-current={status === complaint.status ? 'step' : undefined}><span>{index < stage ? <Check size={14} aria-hidden="true" /> : index + 1}</span><strong>{statusLabels[status]}</strong></li>)}</ol>}</section>
+    <section className="panel status-panel"><div className="section-title-row"><h2>Complaint progress</h2><div className="button-row" style={{ alignItems: 'center' }}><SlaBadge createdAt={complaint.created_at} priority={complaint.priority} status={complaint.status} /><StatusBadge status={complaint.status} /></div></div>{complaint.status === 'withdrawn' ? <p className="muted">This complaint was withdrawn by its owner. Further processing has stopped.</p> : <ol className="progress-steps" style={progressStyle}>{progressStatuses.map((status, index) => <li key={status} className={index <= stage ? 'step-reached' : ''} aria-current={status === complaint.status ? 'step' : undefined}><span>{index < stage ? <Check size={14} aria-hidden="true" /> : index + 1}</span><strong>{statusLabels[status]}</strong></li>)}</ol>}</section>
     <div className="complaint-detail-grid"><div><section className="panel"><h2>{profile?.id === complaint.citizen_id ? 'Your complaint' : 'Complaint details'}</h2><p className="complaint-description">{complaint.description}</p><p className="full-reference">Full reference: {complaint.id}</p></section>
       <section className="panel"><div className="section-heading"><MapPin size={20} aria-hidden="true" /><div><h2>Reported location</h2><p className="muted">{complaint.location_text}</p></div></div><Suspense fallback={<p className="muted">Loading location map…</p>}><LocationMap point={[complaint.latitude, complaint.longitude]} /></Suspense><p className="field-hint">{complaint.latitude.toFixed(6)}, {complaint.longitude.toFixed(6)}</p></section>
       {complaint.status === 'withdrawn' && <section className="panel withdrawn-details"><h2>Withdrawal details</h2><p className="complaint-description">{complaint.withdrawal_reason}</p>{complaint.withdrawn_at && <p className="muted">Withdrawn on {displayDate(complaint.withdrawn_at)}</p>}<p className="muted">The complaint and supporting evidence are retained in your history.</p></section>}

@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useAuth } from '../../auth'
 import { useResource } from '../../../shared/lib/useResource'
-import { getComplaint, getLookups, getMyComplaints, getMySummary } from '../data/complaints-api'
+import { getCommunityImpact, getComplaint, getLookups, getMyComplaints, getMySummary } from '../data/complaints-api'
 
 export function useComplaintList(page: number, search = '', status = '') {
   const { profile } = useAuth()
@@ -16,8 +16,9 @@ export function useCitizenOverview() {
   const { profile } = useAuth()
   const userId = profile?.id ?? ''
   const loader = useCallback(async () => {
-    const [summary, recent, lookups] = await Promise.all([getMySummary(userId), getMyComplaints(userId, 0), getLookups()])
-    return { summary, recent: recent.complaints.slice(0, 5), ...lookups }
+    const [summary, recent, lookups, impact] = await Promise.all([getMySummary(userId), getMyComplaints(userId, 0), getLookups(), getCommunityImpact().catch(() => null)])
+    // Community impact is supplementary; its absence never blocks the Citizen's own data.
+    return { summary, recent: recent.complaints.slice(0, 6), impact, ...lookups }
   }, [userId])
   return useResource(loader)
 }

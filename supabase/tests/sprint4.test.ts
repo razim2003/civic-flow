@@ -10,10 +10,10 @@ const call = <T = Record<string, unknown>>(name: string, args: unknown[], user: 
 
 async function resolvedComplaint(owner = citizen) {
   const id = (await call<{ id: string }>('submit_complaint', [category, 'Broken streetlight beside a fictional bus stop.', 'Sample Junction', 6.1, 80.2, randomUUID()], owner)).rows[0].id
+  // Auto-assignment already gives the department's only Officer the complaint.
   await call('review_complaint', [id, 1, ''], officer)
-  await call('assign_complaint', [id, officer, 2, ''], officer)
-  await call('start_complaint', [id, 3, ''], officer)
-  await call('resolve_complaint', [id, 'The streetlight was replaced and tested.', 4], officer)
+  await call('start_complaint', [id, 2, ''], officer)
+  await call('resolve_complaint', [id, 'The streetlight was replaced and tested.', 3], officer)
   return id
 }
 
@@ -82,9 +82,11 @@ describe('CF-13 notification inbox and read state', () => {
   it('shows recipients only their own notifications and marks selected ones read', async () => {
     const id = await resolvedComplaint()
     const mine = await asUser(db, citizen, () => db.query<{ id: string; kind: string; read_at: Date | null }>('select id,kind,read_at from public.notifications where complaint_id=$1 order by created_at', [id]))
-    expect(mine.rows.map((row) => row.kind)).toEqual(['submission', 'progress', 'progress', 'progress', 'resolution'])
+    expect(mine.rows.map((row) => row.kind)).toEqual(['submission', 'progress', 'progress', 'resolution'])
     expect(mine.rows.every((row) => row.read_at === null)).toBe(true)
-    for (const user of [otherCitizen, officer, admin]) expect((await asUser(db, user, () => db.query('select id from public.notifications where complaint_id=$1', [id]))).rows).toHaveLength(0)
+    // Others see nothing addressed to the Citizen; the assigned Officer sees only their own assignment notice.
+    for (const user of [otherCitizen, officer, admin]) expect((await asUser(db, user, () => db.query('select id from public.notifications where complaint_id=$1 and recipient_id<>$2', [id, user]))).rows).toHaveLength(0)
+    for (const user of [otherCitizen, admin]) expect((await asUser(db, user, () => db.query('select id from public.notifications where complaint_id=$1', [id]))).rows).toHaveLength(0)
     const marked = await call<{ id: string; read_at: Date | null }>('mark_notifications_read', [[mine.rows[0].id], false], citizen)
     expect(marked.rows).toHaveLength(1)
     expect(marked.rows[0].read_at).not.toBeNull()

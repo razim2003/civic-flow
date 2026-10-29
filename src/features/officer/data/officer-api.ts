@@ -32,6 +32,12 @@ export async function loadQueue(departmentId: string, actorId: string, filters: 
   if (error) throw error
   return { complaints: complaintSchema.array().parse(data), count: count ?? 0 }
 }
+export const MAP_LIMIT = 300
+export async function loadDepartmentMap(departmentId: string) {
+  const { data, error, count } = await supabase.from('complaints').select(fields, { count: 'exact' }).eq('department_id', departmentId).in('status', [...openStatuses]).order('created_at', { ascending: false }).limit(MAP_LIMIT)
+  if (error) throw error
+  return { complaints: complaintSchema.array().parse(data), total: count ?? 0 }
+}
 export async function loadOfficerSummary(departmentId: string, actorId: string) {
   const results = await Promise.all([
     supabase.from('complaints').select('id', { count: 'exact', head: true }).eq('department_id', departmentId).in('status', [...openStatuses]),

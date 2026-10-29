@@ -63,7 +63,7 @@ describe('CF-22 owner withdrawal with retained audit history', () => {
     const id = await create(), first = (await withdraw(id)).rows[0]
     expect((await withdraw(id)).rows[0]).toEqual(first)
     expect((await db.query('select id from public.complaint_events where complaint_id=$1', [id])).rows).toHaveLength(2)
-    expect((await db.query('select id from public.notifications where complaint_id=$1', [id])).rows).toHaveLength(2)
+    expect((await db.query('select id from public.notifications where complaint_id=$1 and recipient_id=$2', [id, citizen])).rows).toHaveLength(2)
     await expect(withdraw(id, citizen, 'A different withdrawal reason')).rejects.toThrow('withdrawal_closed')
     await expect(withdraw(id, citizen, reason, 2)).rejects.toThrow('withdrawal_closed')
   })

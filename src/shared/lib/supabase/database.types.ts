@@ -140,6 +140,15 @@ export type Database = { public: {
       p_remark: string
       p_expected_version: number
     }; Returns: Database['public']['Tables']['complaints']['Row'][] }
+    admin_analytics: { Args: Record<string, never>; Returns: Json }
+    admin_dispatch_complaint: { Args: {
+      p_id: string
+      p_department_id: string
+      p_category_id: string
+      p_officer_id: string | null
+      p_expected_version: number
+      p_reason: string
+    }; Returns: Database['public']['Tables']['complaints']['Row'][] }
     admin_update_user: { Args: {
       p_target_id: string
       p_role: Database['public']['Enums']['app_role']
@@ -160,6 +169,7 @@ export type Database = { public: {
       p_expected_version: number
       p_reason: string
     }; Returns: Database['public']['Tables']['complaints']['Row'][] }
+    community_impact: { Args: Record<string, never>; Returns: Json }
     finalize_evidence: { Args: {
       p_evidence_id: string
     }; Returns: Database['public']['Tables']['complaint_evidence']['Row'][] }
