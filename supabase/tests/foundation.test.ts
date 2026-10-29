@@ -87,10 +87,8 @@ describe('migrations, grants and RLS running inside PostgreSQL', () => {
     expect((await asUser(db, ids.other, () => db.query('select * from public.departments'))).rows).toHaveLength(0)
     await expect(asUser(db, ids.other, () => db.query("select * from public.update_my_profile('Old JWT')"))).rejects.toThrow('not_authorized')
   })
-  it.each(['complaint_feedback','notifications'])('keeps future feature table %s inaccessible until its policies ship', async (table) => {
-    await expect(asUser(db, ids.admin, () => db.query(`select * from public.${table}`))).rejects.toThrow('permission denied')
-  })
-  it.each(['complaints','complaint_events','complaint_evidence'])('permits authorized reads of %s while denying direct writes', async (table) => {
+  // Feedback/notification read rules shipped in Sprint 4; row-level allow/deny cases are in sprint4.test.ts.
+  it.each(['complaints','complaint_events','complaint_evidence','complaint_feedback','notifications'])('permits authorized reads of %s while denying direct writes', async (table) => {
     expect((await asUser(db, ids.admin, () => db.query(`select * from public.${table}`))).rows).toEqual([])
     const result = await db.query<{ allowed: boolean }>("select has_table_privilege('authenticated',$1,'INSERT,UPDATE,DELETE') as allowed", [`public.${table}`])
     expect(result.rows[0].allowed).toBe(false)

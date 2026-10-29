@@ -147,6 +147,13 @@ export type Database = { public: {
       p_is_active: boolean
       p_display_name: string
     }; Returns: Database['public']['Tables']['profiles']['Row'][] }
+    admin_upsert_category: { Args: {
+      p_id: string | null
+      p_name: string
+      p_description: string
+      p_department_id: string
+      p_is_active: boolean
+    }; Returns: Database['public']['Tables']['categories']['Row'][] }
     assign_complaint: { Args: {
       p_id: string
       p_officer_id: string
@@ -159,6 +166,10 @@ export type Database = { public: {
     list_assignable_officers: { Args: {
       p_department_id: string
     }; Returns: Json }
+    mark_notifications_read: { Args: {
+      p_notification_ids: string[] | null
+      p_all: boolean
+    }; Returns: Database['public']['Tables']['notifications']['Row'][] }
     reserve_evidence: { Args: {
       p_complaint_id: string
       p_filename: string
@@ -195,6 +206,11 @@ export type Database = { public: {
       p_longitude: number
       p_request_id: string
     }; Returns: Database['public']['Tables']['complaints']['Row'][] }
+    submit_feedback: { Args: {
+      p_complaint_id: string
+      p_rating: number
+      p_comment: string
+    }; Returns: Database['public']['Tables']['complaint_feedback']['Row'][] }
     transfer_complaint: { Args: {
       p_id: string
       p_department_id: string

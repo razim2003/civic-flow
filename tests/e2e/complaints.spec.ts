@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
+import { capture } from './capture'
 
 const citizen = '00000000-0000-4000-8000-000000000001'
 const category = '10000000-0000-4000-8000-000000000001'
@@ -98,6 +99,7 @@ test('Citizen submits, retries optional evidence, downloads privately and revisi
   const state = await fixture(page, { uploadFailure: true })
   await login(page)
   await expect(page.getByRole('heading', { name: 'No complaints yet' })).toBeVisible()
+  await capture(page, '02-citizen-overview')
   await fillComplaint(page)
   const profileRefresh = page.waitForResponse((response) => response.url().includes('/rest/v1/profiles'))
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
@@ -105,6 +107,7 @@ test('Citizen submits, retries optional evidence, downloads privately and revisi
   await expect(page.getByLabel('Describe the issue')).toHaveValue('Several deep potholes beside the public school.')
   await expect(page.locator('.leaflet-container')).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('complaint-form.png'), fullPage: true })
+  await capture(page, '03-citizen-new-complaint')
   await page.getByRole('button', { name: 'Submit complaint' }).click()
   await expect(page.getByRole('heading', { name: 'Complaint submitted', exact: true })).toBeVisible()
   expect(state.submissionRequests).toHaveLength(1)
@@ -125,9 +128,11 @@ test('Citizen submits, retries optional evidence, downloads privately and revisi
   await expect(page.getByRole('heading', { name: 'Complaint history' })).toBeVisible()
   await expect(page.getByText('Supporting evidence added', { exact: true })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('complaint-detail.png'), fullPage: true })
+  await capture(page, '04-citizen-complaint-detail')
   await page.getByRole('link', { name: 'My complaints', exact: true }).first().click()
   await expect(page.getByText('1 complaint · Page 1')).toBeVisible()
   await expect(page.locator('.complaint-card')).toHaveCount(1)
+  await capture(page, '05-citizen-my-complaints')
 })
 
 test('a lost submission response preserves details and retries the same idempotency key', async ({ page }) => {
