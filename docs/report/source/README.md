@@ -11,7 +11,7 @@ from `docs/sdlc/*.md`, so the report stays consistent with the SDLC evidence pac
 | `render-diagrams.mjs` | Renders every diagram to `fig/*.png` with headless Microsoft Edge |
 | `crop-screens.py` | Crops `docs/sdlc/screens` and composes phone views from `assets/` |
 | `build-pdf.mjs` + `merge.py` | Print HTML → PDF per portrait/landscape run. A measuring pass records the page of every paragraph, list item, table row and figure (`out/layout.json`); the final pass fills in the contents page numbers, which `merge.py` checks against the page text before adding headers, footers and bookmarks |
-| `build-docx.mjs` | Editable Word version. It uses `out/layout.json` to break pages exactly where the PDF does, so both have the same page numbers, and writes the contents, figure and table lists out in full (as Word fields that can still be updated) |
+| `build-docx.mjs` | Editable Word version, all A4 portrait (the wide activity diagram is turned sideways). It uses `out/layout.json` to break pages exactly where the PDF does, so both have the same page numbers, and writes the contents, figure and table lists out in full (as Word fields that can still be updated) |
 | `preview.py` | Contact sheet of PDF pages for visual review |
 
 Requirements: Node.js ≥ 22.18 with the app's dependencies installed (`npm ci` in the repository root, for Playwright),

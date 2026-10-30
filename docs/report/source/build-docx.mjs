@@ -47,7 +47,7 @@ function table(b, width, k) {
   const ws = b.widths ?? b.head.map(() => 1), total = ws.reduce((a, c) => a + c, 0)
   const cols = ws.map((w) => Math.floor((w / total) * width))
   cols[cols.length - 1] += width - cols.reduce((a, c) => a + c, 0)
-  const size = b.tiny ? 15 : b.small ? 17 : 19, line = b.tiny ? 210 : b.small ? 230 : 250
+  const size = b.tiny ? 15 : b.small ? 17 : 19, line = b.tiny ? 200 : b.small ? 226 : 250
   const border = { style: BorderStyle.SINGLE, size: 4, color: 'D5DAD6' }
   const borders = { top: border, bottom: border, left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' } }
   const riskFill = (v) => { const n = parseInt(v, 10); return isNaN(n) ? null : n >= 6 ? 'F8D7D1' : n >= 4 ? 'FDEBC8' : 'D8EEE2' }
