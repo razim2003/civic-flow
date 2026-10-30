@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
-import { capture } from './capture'
+import { audit, capture } from './capture'
 
 const id = '00000000-0000-4000-8000-000000000001'
 const now = Math.floor(Date.now() / 1000)
@@ -58,6 +58,7 @@ test('registration validates input and shows email verification without acceptin
   await page.goto('/register')
   await page.getByRole('button', { name: 'Create account', exact: true }).click()
   await expect(page.getByText('Enter your name.')).toBeVisible()
+  await audit(page, 'a03-register-errors')
   await page.getByLabel('Full name').fill('Alex Perera')
   await page.getByLabel('Email address').fill('citizen@example.test')
   await page.getByLabel('Password', { exact: true }).fill('a-long-test-passphrase')
@@ -126,6 +127,7 @@ test('profile changes refresh the displayed account without changing its role', 
   await page.getByLabel('Full name').fill('Taylor Perera')
   await page.getByRole('button', { name: 'Save changes' }).click()
   await expect(page.getByLabel('Full name')).toHaveValue('Taylor Perera')
+  await audit(page, 'a04-profile')
   await expect(page.getByText('Citizen workspace')).toBeVisible()
 })
 
@@ -137,6 +139,7 @@ test('Administrator sees backend refusal when attempting to remove the last admi
   await page.getByLabel('Account role').selectOption('citizen')
   await page.getByRole('button', { name: 'Save access' }).click()
   await expect(page.getByRole('alert')).toHaveText('At least one active administrator must remain.')
+  await audit(page, 'a05-admin-users-edit')
   await expect(page.getByText('Administrator workspace')).toBeVisible()
 })
 

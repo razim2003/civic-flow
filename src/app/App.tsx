@@ -1,7 +1,7 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { BrowserRouter, Link, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
-import { ArrowRight, BarChart3, Bell, BriefcaseBusiness, CircleHelp, ClipboardList, LayoutDashboard, LogOut, Map, PlusCircle, Send, Tags, UserRound, Users } from 'lucide-react'
+import { ArrowRight, BarChart3, Bell, BriefcaseBusiness, CircleHelp, ClipboardList, LayoutDashboard, LogOut, Map, Menu, PlusCircle, Send, Tags, UserRound, Users, X } from 'lucide-react'
 import { AuthPage, AuthProvider, roleLabels, useAuth } from '../features/auth'
 import { useUnreadCount } from '../features/notifications/badge'
 import { Brand } from '../shared/ui/Brand'
@@ -40,20 +40,28 @@ const CitizenOnly = ({ children }: { children: ReactNode }) => <RoleOnly role="c
 function ProtectedLayout() {
   const auth = useAuth()
   const [logoutError, setLogoutError] = useState('')
+  // Below the desktop breakpoint the sidebar is an off-canvas menu.
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuButton = useRef<HTMLButtonElement>(null)
+  const closeButton = useRef<HTMLButtonElement>(null)
   const { pathname } = useLocation()
   const unread = useUnreadCount(auth.profile?.role === 'citizen' || auth.profile?.role === 'officer', pathname)
   if (auth.loading) return <LoadingScreen />
   if (!auth.profile) return <Navigate to="/login" replace />
   const profile = auth.profile
+  const openMenu = () => { setMenuOpen(true); requestAnimationFrame(() => closeButton.current?.focus()) }
+  const closeMenu = (returnFocus = false) => { setMenuOpen(false); if (returnFocus) menuButton.current?.focus() }
   const updates = <NavLink to="/notifications"><Bell size={18} aria-hidden="true" />Updates{unread > 0 && <span className="nav-count" aria-label={`${unread} unread`}>{unread > 99 ? '99+' : unread}</span>}</NavLink>
-  return <div className="workspace-layout"><a className="skip-link" href="#main-content">Skip to content</a><aside className="sidebar"><Brand light /><div className="workspace-label">Your workspace</div>
-    <nav aria-label="Main navigation"><NavLink to="/workspace"><LayoutDashboard size={18} aria-hidden="true" />Overview</NavLink>
+  return <div className={`workspace-layout ${menuOpen ? 'menu-open' : ''}`} onKeyDown={(event) => { if (event.key === 'Escape' && menuOpen) closeMenu(true) }}><a className="skip-link" href="#main-content">Skip to content</a>
+    <aside id="workspace-menu" className={`sidebar ${menuOpen ? 'open' : ''}`} aria-label="Workspace menu"><div className="sidebar-top"><Brand light /><button ref={closeButton} type="button" className="sidebar-close" aria-label="Close menu" onClick={() => closeMenu(true)}><X size={18} aria-hidden="true" /></button></div><div className="workspace-label">Your workspace</div>
+    <nav aria-label="Main navigation" onClick={(event) => { if (event.target instanceof Element && event.target.closest('a')) closeMenu() }}><NavLink to="/workspace"><LayoutDashboard size={18} aria-hidden="true" />Overview</NavLink>
       {profile.role === 'citizen' && <><NavLink to="/complaints" end><ClipboardList size={18} aria-hidden="true" />My complaints</NavLink><NavLink to="/complaints/new"><PlusCircle size={18} aria-hidden="true" />Make a complaint</NavLink>{updates}</>}
       {profile.role === 'officer' && <><NavLink to="/officer/complaints"><ClipboardList size={18} aria-hidden="true" />Department complaints</NavLink><NavLink to="/officer/assigned"><BriefcaseBusiness size={18} aria-hidden="true" />Assigned to me</NavLink><NavLink to="/officer/map"><Map size={18} aria-hidden="true" />Department map</NavLink>{updates}</>}
       {profile.role === 'administrator' && <><NavLink to="/admin/dispatch"><Send size={18} aria-hidden="true" />Dispatch centre</NavLink><NavLink to="/admin/analytics"><BarChart3 size={18} aria-hidden="true" />Analytics</NavLink><div className="nav-section">Manage</div><NavLink to="/admin/users"><Users size={18} aria-hidden="true" />User management</NavLink><NavLink to="/admin/categories"><Tags size={18} aria-hidden="true" />Service categories</NavLink></>}
       <NavLink to="/profile"><UserRound size={18} aria-hidden="true" />Profile settings</NavLink></nav>
     <div className="sidebar-bottom"><div className="sidebar-note"><CircleHelp size={19} aria-hidden="true" /><strong>Every voice makes a difference.</strong><p>Thank you for being part of a more responsive community.</p></div><button className="signout" onClick={() => void auth.logout().catch((error: unknown) => setLogoutError(userMessage(error)))}><LogOut size={17} aria-hidden="true" />Sign out</button></div>
-  </aside><div className="workspace-main"><header className="workspace-header"><span><span className="status-dot" />{roleLabels[profile.role]} workspace</span><div className="header-actions"><ThemeToggle /><div className="account-summary"><span>{profile.display_name}</span><span className="avatar" aria-hidden="true">{profile.display_name.slice(0, 1).toUpperCase()}</span></div></div></header>
+  </aside><div className="sidebar-backdrop" aria-hidden="true" onClick={() => closeMenu()} />
+    <div className="workspace-main"><header className="workspace-header"><div className="header-start"><button ref={menuButton} type="button" className="icon-button menu-button" aria-label="Open menu" aria-expanded={menuOpen} aria-controls="workspace-menu" onClick={openMenu}><Menu size={18} aria-hidden="true" />{unread > 0 && <i className="menu-dot" aria-hidden="true" />}</button><span className="header-brand"><Brand /></span><span className="workspace-role"><span className="status-dot" />{roleLabels[profile.role]} workspace</span></div><div className="header-actions"><ThemeToggle /><div className="account-summary"><span>{profile.display_name}</span><span className="avatar" aria-hidden="true">{profile.display_name.slice(0, 1).toUpperCase()}</span></div></div></header>
     <main className="workspace-content" id="main-content">{logoutError && <Notice>{logoutError}</Notice>}<Suspense fallback={<p role="status" className="muted">Opening page…</p>}><PageTransition routeKey={pathname}><Outlet /></PageTransition></Suspense></main><footer className="workspace-footer">CivicFlow · Better services, stronger communities.</footer></div></div>
 }
 

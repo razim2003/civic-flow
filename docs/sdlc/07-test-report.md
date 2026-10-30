@@ -39,9 +39,16 @@ npx playwright test
 | Lint / typecheck / build | — | — | ✔ | — |
 | Unit (Vitest) | 13 | 77 | 77 | 0 |
 | Database integration (PGlite, 15 migrations + demo data) | 9 | 147 | 147 | 0 |
-| System (Playwright, Edge) | 5 | 58 | 58 | 0 |
+| System (Playwright, Edge) | 5 | 59 | 59 | 0 |
 | HTTP integration (Docker) | 1 | 9 | — | — (not run; Docker not running) |
-| **Total executed** | **27** | **282** | **282** | **0** |
+| **Total executed** | **27** | **283** | **283** | **0** |
+
+**Responsive layout audit (2026-10-30).** `LAYOUT_AUDIT=<folder> npx playwright test` re-renders the 24 key screens and form states at 360, 414, 768 and 1280 px wide. It records horizontal page scroll, content overflowing its box and children sticking out of their parent, and saves a screenshot for each size.
+- **First run:** found the defects DEF-16…19.
+- **After the fixes:** no page scrolls sideways and no content leaves its box. The only items left are intended:
+  - the hover tilt of the theme button;
+  - the pulsing "now" dot on the landing page;
+  - the ticket notches, which sit inside the card padding.
 
 The earlier Sprint 4 run is kept below for history.
 
@@ -195,6 +202,8 @@ Legend: **+** positive, **−** negative/abuse. Every "Actual" result below was 
 | TC-DSP-02 | CF-21, 25 | + | Admin opens Analytics; exports CSV | Unstaffed warning; 67% on target; trend chart; CSV downloaded with dated name | As expected | Pass | e2e sprint5: "CR-006 Administrator analytics shows targets, coverage and exports CSV" |
 | TC-DSP-03 | CF-13, 23, 25 | + | Officer with an auto-assigned complaint | Updates badge "1 unread"; inbox link goes to the Officer detail path; map shows 1 marker; queue shows a "Due in" badge | As expected | Pass | e2e sprint5: "CR-006 Officer sees assignments in Updates, the department map and service targets" |
 | TC-UX-02 | NFR-03 | + | Landing page; toggle theme | Hero and CTA shown; theme switches; no horizontal overflow | As expected | Pass | e2e sprint5: "landing page explains the product and the theme toggle switches to dark mode" |
+| TC-UX-03 | NFR-03, NFR-04 | + | 1280 px, then 768 px and 360 px. Open the menu, press Escape, then open each admin page from the menu | Desktop shows the sidebar with no menu button. Tablet/phone hide the sidebar links behind **Open menu** (`aria-expanded`). Focus moves to **Close menu** and returns to the button on Escape. Choosing a page closes the menu. No page is wider than the screen | As expected | Pass | e2e sprint5: "tablet and phone use an accessible slide-out menu and no page scrolls sideways" |
+| TC-UX-04 | NFR-03 | + | Layout audit of 24 screens × 4 widths | No horizontal scroll and no overflowing content (see 7.2) | As expected | Pass | `LAYOUT_AUDIT` run over the full browser suite |
 | TC-U-SLA-01 | CF-25 | +/− | Targets and states at fixed times | 24/72/168/336 h; on track / due soon / overdue; closed and invalid dates ignored | As expected | Pass | unit: "service-level targets (mirrors private.sla_hours) > …" |
 | TC-U-DSP-01 | CF-24 | +/− | Attention flags; input bounds; messages | Unstaffed/unassigned/overdue flags; reason 10–2,000; refusals explained | As expected | Pass | unit: "CR-006 dispatch rules > …" |
 | TC-U-ANL-01 | CF-21, SR-12 | +/− | Summary maths; CSV with `=HYPERLINK` | Totals and rates correct; cells quoted; formula neutralised | As expected | Pass | unit: "CR-006 analytics > …" |
@@ -283,6 +292,10 @@ Legend: **+** positive, **−** negative/abuse. Every "Actual" result below was 
 | DEF-13 | Sprint 5 (2026-10-30) | Hosted use / read-only data check | **High** | 4 of 5 open complaints sat in departments with no Officers and could never be handled; the Administrator could not act | Routing assumed every department is staffed; no assignment at submission; Administrator was read-only | CR-006: auto-assignment, Administrator dispatch, coverage flags (migration 015) | TC-DB-DSP-01…10, TC-DSP-01 pass |
 | DEF-14 | Sprint 5 | Screenshot review | Medium | Analytics bars below the fold stayed empty until scrolled into view, so printouts and screenshots under-reported data | Bars animated on scroll-into-view | Bars animate on mount; scroll reveals kept only for decorative sections | TC-DSP-02 pass; screenshots re-reviewed |
 | DEF-15 | Sprint 5 | Screenshot review | Low | Sign-in route illustration clipped its end labels; ticket notches misaligned with the perforation | Coordinates too close to the viewBox edge; notch tied to card bottom | Route moved inward; notches anchored to the perforated line | Visual re-check |
+| DEF-16 | Sprint 5 (2026-10-30) | User report + layout audit | **Medium** | Feedback rating options spilled out of their boxes at every width above 414 px | Rating cards had a 150 px minimum, narrower than the radio, five stars and label combined | One aligned option per row (radio, label, stars); stars drop below the label on very small phones | TC-FB-01, TC-UX-04 |
+| DEF-17 | Sprint 5 | Layout audit | **Medium** | On tablets the full sidebar stayed open, squeezing pages into ~500 px: two thin detail columns, stat cards cut off, long words breaking | The sidebar only collapsed below 760 px, and then into wrapped link chips | Below 1100 px the sidebar is an accessible slide-out menu opened from a sticky header. Detail pages use one column below 1180 px, and stat cards auto-fit | TC-UX-03, TC-UX-04 |
+| DEF-18 | Sprint 5 | Layout audit | Medium | User management and Service categories scrolled sideways on phones (up to 134 px) | Wide no-wrap tables | Admin tables become stacked, labelled rows on phones | TC-UX-03, TC-UX-04 |
+| DEF-19 | Sprint 5 | Layout audit | Low | Ticket notches extended outside the card; heading links ("Invite an Officer") were squeezed into a thin column on phones | Notches drawn as full circles and clipped; heading rows could not wrap | Half-circle notches drawn inside the card; heading rows wrap and their links do not | TC-UX-04 |
 
 There are no open defects of High or Medium severity.
 

@@ -152,6 +152,7 @@ test('transfer returns to the queue after old-department read access is lost', a
 })
 test('Withdrawn complaints remain readable with all processing disabled on mobile', async ({ page }, testInfo) => {
   await fixture(page, { closed: true }); await page.setViewportSize({ width: 375, height: 812 }); await login(page)
+  await page.getByRole('button', { name: 'Open menu' }).click()
   await page.getByRole('link', { name: 'Department complaints', exact: true }).click()
   await page.getByLabel('Status', { exact: true }).selectOption('all')
   await page.locator('.complaint-card').click()
