@@ -101,6 +101,13 @@ supabase functions deploy provision-officer --project-ref xapqfnumcpjckhpdyuxz
 4. Copy the production URL into Supabase Auth URL configuration and into `CIVICFLOW_APP_URL`, then redeploy the function's secrets if needed.
 5. Run the smoke test (§8.6).
 
+**What was done on 2026-10-30:**
+
+1. The project was created with `vercel link` in the `mohamedsharfans-projects` scope as `civic-flow`. Linking the GitHub repository failed because the repository belongs to another account (`razim2003`), so deployments are made from the CLI. The repository owner can connect it later under *Project → Settings → Git* to deploy on every push.
+2. `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` were added for Production and Preview. These are the public URL and publishable key; no secret key is used.
+3. `vercel deploy --prod`. A committed `.vercelignore` allow-list uploads only the files the build needs. It never uploads `.env*`, credentials, tool configuration, tests output or docs.
+4. Still to do in the Supabase dashboard (*Authentication → URL Configuration*): set the Site URL to `https://civic-flow-rho.vercel.app` and allow `https://civic-flow-rho.vercel.app/auth/callback`, `/reset-password` and `/accept-invite`. Then set the `CIVICFLOW_APP_URL` function secret to the same URL so Officer invitations link to the live site.
+
 Alternatively, with the CLI:
 
 ```bash
@@ -117,9 +124,9 @@ Run this on the deployed URL with **fictional demo accounts** (never real citize
 
 | # | Check | Expected | Result |
 | --- | --- | --- | --- |
-| S1 | Open `/` and `/workspace` signed out | Redirect to sign-in | |
-| S2 | Deep link `/complaints/new` reloads | SPA loads (no 404) and asks to sign in | |
-| S3 | Response headers | CSP, `X-Frame-Options: DENY`, `nosniff` present | |
+| S1 | Open `/` and `/workspace` signed out | Redirect to sign-in | Pass 2026-10-30: `/` shows the landing page; `/workspace` redirects to `/login` |
+| S2 | Deep link `/complaints/new` reloads | SPA loads (no 404) and asks to sign in | Pass 2026-10-30: HTTP 200, then redirected to sign-in; no console errors |
+| S3 | Response headers | CSP, `X-Frame-Options: DENY`, `nosniff` present | Pass 2026-10-30: CSP, `X-Frame-Options: DENY`, `nosniff` and `Referrer-Policy` present |
 | S4 | Register a demo Citizen; confirm email; sign in | Citizen workspace | |
 | S5 | Submit a complaint with a map location and a small PNG | Reference shown; file downloadable | |
 | S6 | Officer (demo) reviews, assigns, starts, adds progress, resolves | Each step in history | |
@@ -136,7 +143,7 @@ Run this on the deployed URL with **fictional demo accounts** (never real citize
 | --- | --- | --- | --- | --- | --- | --- |
 | 2026-10-29 | Supabase DB only | `https://xapqfnumcpjckhpdyuxz.supabase.co` | 22e6c9d | 001–014 (012–014 applied this day; checksums unchanged) | Anonymous REST denial verified | Mohamed Sharfan (with Claude Code) |
 | 2026-10-30 | Supabase (database only) | xapqfnumcpjckhpdyuxz | `sprint-5/dispatch-and-experience` | 001–015 applied | Read-only and anonymous checks passed (see sprint-5.md) | Team + Claude Code |
-| — | Production (Vercel) | *to be filled* | | | | |
+| 2026-10-30 | Production (Vercel) | https://civic-flow-rho.vercel.app | 8434213 (main) | 001–015 (unchanged) | S1–S3 pass. The build points at the live Supabase project; the page fits a 375 px phone with no console errors. S4–S12 need signed-in demo accounts and are run by the team | Mohamed Sharfan (with Claude Code) |
 
 ## 8.8 Demonstration script (final evaluation)
 
