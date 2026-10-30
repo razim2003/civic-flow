@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
-import { capture } from './capture'
+import { audit, capture } from './capture'
 
 // CR-006 journeys: dispatch, analytics, Officer map/inbox, landing, theme and service targets. Fictional data; Supabase is intercepted.
 const user = '00000000-0000-4000-8000-000000000001', citizen = '00000000-0000-4000-8000-000000000002', officerB = '00000000-0000-4000-8000-000000000003'
@@ -75,6 +75,7 @@ test('CR-006 Administrator sees the coverage gap and dispatches a stuck complain
   await row.getByLabel('Department').selectOption(road)
   await expect(row.getByLabel('Category')).toHaveValue(roadCat)
   await row.getByLabel('Assign Officer').selectOption(officerB)
+  await audit(page, 'a02-admin-dispatch-form')
   await row.getByRole('button', { name: 'Confirm dispatch' }).click()
   await expect(row.getByRole('alert')).toHaveText('Explain the dispatch in at least 10 characters.')
   expect(calls).toHaveLength(0)
@@ -124,3 +125,32 @@ test('landing page explains the product and the theme toggle switches to dark mo
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).not.toBe(before)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
+
+test('tablet and phone use an accessible slide-out menu and no page scrolls sideways', async ({ page }, testInfo) => {
+  await fixture(page, 'administrator')
+  await login(page)
+  const menuButton = page.getByRole('button', { name: 'Open menu' })
+  const menu = page.locator('#workspace-menu')
+  await expect(menuButton).toBeHidden()
+  for (const size of [{ width: 768, height: 1024 }, { width: 360, height: 740 }]) {
+    await page.setViewportSize(size)
+    await expect(menuButton).toBeVisible()
+    await expect(menu.getByRole('link', { name: 'Analytics', exact: true })).toBeHidden()
+    await menuButton.click()
+    await expect(menuButton).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByRole('button', { name: 'Close menu' })).toBeFocused()
+    await page.waitForTimeout(500)
+    await page.screenshot({ path: testInfo.outputPath(`menu-open-${size.width}.png`) })
+    await page.keyboard.press('Escape')
+    await expect(menuButton).toHaveAttribute('aria-expanded', 'false')
+    await expect(menuButton).toBeFocused()
+    for (const link of ['Dispatch centre', 'Analytics', 'User management', 'Service categories', 'Overview']) {
+      await menuButton.click()
+      await menu.getByRole('link', { name: link, exact: true }).click()
+      await expect(menuButton).toHaveAttribute('aria-expanded', 'false')
+      await expect(page.locator('main h1')).toBeVisible()
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+    }
+  }
+})
+

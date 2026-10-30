@@ -81,3 +81,20 @@ Recovery: forward-fix only. Revoking EXECUTE on `admin_dispatch_complaint` disab
 ## Demonstration data — 2026-10-30
 
 The user asked for Sri Lankan sample data to check the system. `supabase/demo/sri-lanka-demo.sql` adds fictional Citizens and Officers who cannot sign in, plus 36 complaints across Sri Lankan towns covering every lifecycle state. Everything goes through the real RPCs, and the script was applied to the hosted project with explicit approval. Checksums of the existing data were unchanged. The design, safeguards, removal script and hosted verification are in [Database operations](database-operations.md#demonstration-data-sri-lanka), and the tests are TC-DB-DEMO-01…05 in the [test report](sdlc/07-test-report.md).
+
+## Responsive and alignment pass — 2026-10-30
+
+The user reported misaligned UI. In particular, the feedback options spilled out of their boxes. An automated layout audit then checked 24 screens at phone, large phone, tablet and desktop widths. It confirmed the feedback problem and found three more:
+- tablets were squeezed by the always-open sidebar;
+- admin tables scrolled sideways on phones;
+- heading links were cramped.
+
+The fixes:
+- an accessible slide-out menu below 1100 px;
+- a one-column detail page on tablets;
+- stat cards that fit any width;
+- a single-column rating list;
+- admin tables that stack into rows on phones;
+- ticket notches drawn inside the card.
+
+A re-run of the audit shows no sideways scrolling and no overflowing content. The defects are DEF-16…19 and the tests are TC-UX-03/04 in the [test report](sdlc/07-test-report.md).

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
-import { capture } from './capture'
+import { audit, capture } from './capture'
 
 const citizen = '00000000-0000-4000-8000-000000000001'
 const category = '10000000-0000-4000-8000-000000000001'
@@ -265,6 +265,7 @@ test('list pagination/search/status preserve ownership and mobile content fits',
   await fixture(page, { reports })
   await page.setViewportSize({ width: 375, height: 812 })
   await login(page)
+  await page.getByRole('button', { name: 'Open menu' }).click()
   await page.getByRole('link', { name: 'My complaints', exact: true }).click()
   await expect(page.locator('.complaint-card')).toHaveCount(10)
   await page.getByRole('button', { name: 'Next', exact: true }).click()
@@ -324,6 +325,7 @@ test('Citizen confirms a reason to withdraw and can still find its history', asy
   await page.getByLabel('Reason for withdrawal').fill('The issue has already been fixed by the local team.')
   await page.getByRole('button', { name: 'Confirm withdrawal' }).click()
   await expect(page.getByRole('alert')).toContainText('Confirm that you want to withdraw')
+  await audit(page, 'a06-citizen-withdraw-form')
   await page.getByRole('button', { name: 'Keep complaint', exact: true }).click()
   expect(state.withdrawalRequests).toHaveLength(0)
   await page.getByRole('button', { name: 'Withdraw complaint', exact: true }).click()

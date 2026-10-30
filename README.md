@@ -88,7 +88,7 @@ npm.cmd run build
 npm.cmd run test:e2e
 ```
 
-Playwright uses installed Microsoft Edge on Windows; CI installs Chromium. Browser tests intercept all Supabase requests and do not touch hosted accounts/data. The database suite applies all SQL migrations to a fresh disposable embedded PostgreSQL instance, with a simulated Auth schema. `npm.cmd run db:types` regenerates types from that same migration schema without reaching the hosted project. Run it after SQL changes and review the output; CI checks it stays in sync.
+Set `LAYOUT_AUDIT=<folder>` when running Playwright to re-check every key screen at 360/414/768/1280 px for sideways scrolling and overflowing content (a JSON report and screenshots per size). Playwright uses installed Microsoft Edge on Windows; CI installs Chromium. Browser tests intercept all Supabase requests and do not touch hosted accounts/data. The database suite applies all SQL migrations to a fresh disposable embedded PostgreSQL instance, with a simulated Auth schema. `npm.cmd run db:types` regenerates types from that same migration schema without reaching the hosted project. Run it after SQL changes and review the output; CI checks it stays in sync.
 
 ## Next development step
 

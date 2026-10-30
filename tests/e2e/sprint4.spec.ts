@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
-import { capture } from './capture'
+import { audit, capture } from './capture'
 
 // Sprint 4 journeys: CF-19 feedback, CF-13 inbox/read state, CF-20 category administration, CF-21 monitoring.
 // Every Supabase request is intercepted with fictional data; no hosted service is contacted.
@@ -106,6 +106,7 @@ test('CF-19 Citizen rates a resolved complaint once and then sees it read-only',
   await expect(page.getByRole('alert')).toHaveText('Choose a rating from 1 to 5.')
   expect(calls).toHaveLength(0)
   await page.getByLabel(/Good/).check()
+  await audit(page, 'a01-citizen-feedback-form')
   await page.getByLabel('Comment (optional)').fill('  Quick repair, thank you.  ')
   await page.getByRole('button', { name: 'Submit feedback' }).click()
   await expect(page.getByRole('heading', { name: 'Service feedback' })).toBeVisible()

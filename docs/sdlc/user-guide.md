@@ -4,6 +4,8 @@ CivicFlow lets citizens report public service problems and follow them until the
 
 > **Privacy:** you stay signed in only while the page is open. Refreshing or closing the tab signs you out.
 
+> **Phones and tablets:** the menu is behind the **☰** button at the top left. Press it to open the menu, then choose a page. Close the menu with **✕**, by tapping outside it, or with the Esc key. A dot on the button means you have unread updates.
+
 ## Citizens
 
 ### Create an account and sign in
