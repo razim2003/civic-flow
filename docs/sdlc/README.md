@@ -4,6 +4,8 @@ ICT2232 Software Engineering · University of Ruhuna · Group 15 · Public Servi
 
 This folder explains how CivicFlow moved through each of the ten SDLC stages in the ICT2232 mini-project guidelines. It shows how the outputs of one stage became the inputs of the next. The approved proposal ([grp15SE.pdf](../reference/grp15SE.pdf), unmodified) is the baseline. Every later change is recorded as a change, not silently written into the baseline.
 
+The compiled final report built from this pack is in [docs/report](../report/CivicFlow_Group15_Project_Report.pdf).
+
 ## How to read this pack
 
 | Stage (guidelines §5) | Document | Key evidence | Feeds into |

@@ -16,6 +16,10 @@ Complaints are now auto-assigned to the least-loaded Officer of the routed depar
 
 [`supabase/demo/sri-lanka-demo.sql`](supabase/demo/sri-lanka-demo.sql) fills a project with fictional Sri Lankan data: 10 citizens, Officers for departments that have none, and 36 complaints from Colombo, Kandy, Jaffna, Galle, Matara, Trincomalee and other towns over the last six months, in every lifecycle state with history, notifications and ratings. It runs everything through the real workflow functions, creates people who cannot sign in, never changes existing rows and is removed with [`remove-sri-lanka-demo.sql`](supabase/demo/remove-sri-lanka-demo.sql). It was applied to the hosted project on 2026-10-30 with the user's approval. See [Database operations](docs/database-operations.md#demonstration-data-sri-lanka).
 
+## Final project report
+
+The submission-ready report (93 pages: all SDLC stages, UML diagrams, screenshots, test evidence, security and individual contributions) is [docs/report/CivicFlow_Group15_Project_Report.pdf](docs/report/CivicFlow_Group15_Project_Report.pdf), with an editable [Word version](docs/report/CivicFlow_Group15_Project_Report.docx). It is generated from the SDLC pack by [docs/report/source](docs/report/source/README.md).
+
 ## SDLC evidence pack
 
 The course-ready documentation for all ten SDLC stages (problem definition, process, Agile planning, requirements and traceability, design/UML, implementation, test report, deployment, maintenance, security, contribution log and user guide) is in [docs/sdlc](docs/sdlc/README.md).

@@ -1,0 +1,18 @@
+{
+  "name": "civicflow-report",
+  "private": true,
+  "description": "Generates the CivicFlow Group 15 project report (PDF + Word) from the SDLC documents.",
+  "type": "module",
+  "scripts": {
+    "figures": "node render-diagrams.mjs && python -I crop-screens.py",
+    "pdf": "node build-pdf.mjs",
+    "docx": "node build-docx.mjs",
+    "build": "npm run figures && npm run pdf && npm run docx"
+  },
+  "dependencies": {
+    "docx": "9.5.1",
+    "docx-preview": "0.3.5",
+    "jszip": "3.10.1",
+    "mermaid": "11.4.1"
+  }
+}
