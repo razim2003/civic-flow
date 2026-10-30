@@ -1,27 +1,39 @@
-# Merge chunk PDFs, stamp header/footer, locate headings for the TOC and add bookmarks.
+# Merges the chunk PDFs.
+#   measure: reads the invisible page markers and writes out/layout.json (used for the contents pages and the Word page breaks).
+#   final:   stamps headers/footers, adds bookmarks and re-checks every contents entry against the page text.
 import json, sys, re, pymupdf
+
 m = json.load(open(sys.argv[1], encoding='utf-8'))
 doc = pymupdf.open()
 for f in m['files']:
     doc.insert_pdf(pymupdf.open(f))
-N = doc.page_count - 1  # cover is not numbered
+MARK = re.compile(r'@@([A-Z][\d.]*)@@')
+
+if m['mode'] == 'measure':
+    markers = {}
+    for i, p in enumerate(doc):
+        for key in MARK.findall(p.get_text()):
+            if key in markers: sys.exit(f'duplicate page marker {key}')
+            markers[key] = i  # page index; the cover is index 0, so this equals the printed page number
+    json.dump({'markers': markers, 'pageCount': doc.page_count}, open('out/layout.json', 'w'))
+    doc.save(m['output'])  # kept for checking where pages break
+    print('measured', doc.page_count, 'pages,', len(markers), 'markers')
+    sys.exit(0)
+
+pages = m['pages']
 norm = lambda s: re.sub(r'\s+', ' ', s).strip()
 texts = [norm(p.get_text()) for p in doc]
-first_body = next(i for i, t in enumerate(texts) if 'Introduction and Problem Domain' in t and 'Table of contents' not in t and 'List of' not in t and '1.1' in t and i > 3)
-def find(needle):
-    n = norm(needle)
-    for i in range(first_body, len(texts)):
-        if n in texts[i]: return i
-    return None
-pages = {}
+leftover = [i for i, t in enumerate(texts) if '@@' in t]
+if leftover: sys.exit(f'page markers left in final PDF on pages {leftover}')
+errors = []
+squash = lambda s: re.sub(r'\s+', '', s)
 for e in m['toc']:
-    i = find(f"{e['num']} {e['text']}"[:60]) or find(e['text'][:40])
-    pages[e['id']] = i
+    want = squash(e['num'] + e['text'])[:40]
+    if want not in squash(texts[pages[e['id']]]): errors.append(f"heading '{e['num']} {e['text']}' not on page {pages[e['id']]}")
 for f in m['figures'] + m['tables']:
-    pages[f['label']] = find(f['label'] + ':')
-missing = [k for k, v in pages.items() if v is None]
-if missing: print('not found:', missing)
-json.dump(pages, open('out/pages.json', 'w'))
+    if f['label'] + ':' not in texts[pages[f['label']]]: errors.append(f"{f['label']} not on page {pages[f['label']]}")
+if errors: sys.exit('contents check failed:\n' + '\n'.join(errors))
+
 grey = (0.48, 0.52, 0.5)
 for i, p in enumerate(doc):
     if i == 0: continue
@@ -31,11 +43,12 @@ for i, p in enumerate(doc):
     t = 'ICT2232 · Group 15'; p.insert_text((w - mx - pymupdf.get_text_length(t, 'helv', 7.5), 34), t, fontsize=7.5, fontname='helv', color=grey)
     p.draw_line((mx, 39), (w - mx, 39), color=(0.85, 0.87, 0.86), width=0.6)
     p.insert_text((mx, h - 26), 'Final project report', fontsize=8, fontname='helv', color=grey)
-    t = f'Page {i} of {N}'; p.insert_text((w - mx - pymupdf.get_text_length(t, 'helv', 8), h - 26), t, fontsize=8, fontname='helv', color=grey)
-outline = [[1, 'Cover', 1], [1, 'Declaration', 2], [1, 'Executive summary', 3], [1, 'Table of contents', 4]]
+    t = f'Page {i}'; p.insert_text((w - mx - pymupdf.get_text_length(t, 'helv', 8), h - 26), t, fontsize=8, fontname='helv', color=grey)
+outline = [[1, 'Cover', 1], [1, 'Declaration', 2], [1, 'Executive summary', 3],
+           [1, 'Table of contents', pages['X0'] + 1], [1, 'List of figures', pages['X1'] + 1], [1, 'List of tables', pages['X2'] + 1]]
 for e in m['toc']:
-    if pages.get(e['id']) is not None: outline.append([e['level'], f"{e['num']} {e['text']}", pages[e['id']] + 1])
+    outline.append([e['level'], f"{e['num']} {e['text']}", pages[e['id']] + 1])
 doc.set_toc(outline)
 doc.set_metadata({'title': 'CivicFlow – Public Service Complaint & Resolution System: Final Project Report', 'author': 'Group 15 – ICT2232 Software Engineering', 'subject': 'SDLC project report', 'keywords': 'CivicFlow, SDLC, Scrum, UML, Supabase'})
 doc.save(m['output'], garbage=3, deflate=True)
-print('merged', doc.page_count, 'pages ->', m['output'])
+print('merged', doc.page_count, 'pages ->', m['output'], '(contents check passed)')
