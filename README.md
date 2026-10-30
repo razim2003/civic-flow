@@ -18,7 +18,7 @@ Complaints are now auto-assigned to the least-loaded Officer of the routed depar
 
 ## Final project report
 
-The submission-ready report (93 pages: all SDLC stages, UML diagrams, screenshots, test evidence, security and individual contributions) is [docs/report/CivicFlow_Group15_Project_Report.pdf](docs/report/CivicFlow_Group15_Project_Report.pdf), with an editable [Word version](docs/report/CivicFlow_Group15_Project_Report.docx). It is generated from the SDLC pack by [docs/report/source](docs/report/source/README.md).
+The submission-ready report (92 pages: all SDLC stages, UML diagrams, screenshots, test evidence, security and individual contributions) is [docs/report/CivicFlow_Group15_Project_Report.pdf](docs/report/CivicFlow_Group15_Project_Report.pdf), with an editable [Word version](docs/report/CivicFlow_Group15_Project_Report.docx). It is generated from the SDLC pack by [docs/report/source](docs/report/source/README.md).
 
 ## SDLC evidence pack
 
