@@ -11,7 +11,6 @@ const T = (caption, head, rows, widths, opts = {}) => ({ t: 'table', caption, he
 const F = (src, caption, opts = {}) => ({ t: 'fig', src, caption, ...opts })
 const C = (title, text) => ({ t: 'callout', title, text })
 const BR = { t: 'pagebreak' }
-const LS = { t: 'landscape' }, PS = { t: 'portrait' }
 const pick = (tbl, cols) => ({ head: cols.map((c) => tbl.head[c]), rows: tbl.rows.map((r) => cols.map((c) => r[c] ?? '')) })
 
 export const meta = {
@@ -224,10 +223,8 @@ export const blocks = [
   H2('Non-functional requirements'),
   P('The quality goals in the proposal were turned into eleven non-functional requirements, each with a measurable acceptance threshold. They cover performance, usability, security, reliability, integrity, availability, maintainability, scalability and privacy.'),
   T('Non-functional requirements', nfr.head, nfr.rows, [0.07, 0.12, 0.25, 0.25, 0.21, 0.1], { small: true }),
-  LS,
   H2('Use case diagram'),
   F('usecase', 'UML use case diagram (UC-15 and UC-16 were added by change request CR-006)', { w: 0.9, maxH: 0.92 }),
-  PS,
   H2('Use case descriptions'),
   ...[
     ['UC-03 Submit complaint (CF-04, 05, 06, 16, 23)', 'Citizen', 'Signed in with an active Citizen account; at least one active category exists', '1) Open Make a complaint. 2) Select a service category. 3) Describe the issue. 4) Select the location on the map, type coordinates or use "Use my current location", and describe the location. 5) Submit. 6) The system validates the input, routes the complaint to the category\'s department, assigns the least-loaded active Officer, records history event 1 and updates, and shows the reference. 7) Optionally attach evidence (UC-13).', '3a/4a Invalid or missing fields: field errors, nothing saved. 5a Network failure: the same request key is retried and no duplicate is created. 6a No Officer in the department: the complaint is left unassigned and flagged for dispatch. 7a Upload fails: the complaint stays saved and the file can be retried.', 'The complaint is Submitted, visible only to its owner, the department\'s Officers and Administrators.'],
@@ -247,11 +244,9 @@ export const blocks = [
     ['Could have', 'CF-21 (monitoring and analytics)', 'Valuable for management; delivered after all Must and Should items'],
     ['Won\'t have (this release)', 'AI classification, GPS Officer tracking, payments, emergency response, broad government integration, SMS/e-mail alerts', 'Out of scope (Chapter 4) or beyond the free-tier constraints'],
   ], [0.18, 0.37, 0.45], { small: true }),
-  LS,
   H2('Requirements traceability matrix'),
   P('The matrix links each requirement to its user story, use case, design artefact, implementation (database migration and frontend module) and tests. Migration numbers are shortened: 001 is 20261019000100_foundation.sql and 015 is 20261029000400_dispatch_and_coverage.sql.'),
   T('Requirements traceability matrix', rtm.head, rtm.rows, [0.07, 0.07, 0.08, 0.17, 0.3, 0.24, 0.07], { small: true, tiny: true }),
-  PS,
   H2('Requirements validation'),
   T('Requirements validation activities', ['Activity', 'What was done', 'Outcome'], [
     ['Proposal review', 'The proposal (Milestones 1–3) was submitted as the requirements baseline', 'Accepted as the baseline for development'],
@@ -279,10 +274,8 @@ export const blocks = [
   F('seq-resolve', 'SD-2: Assigned Officer resolves a complaint (UC-07)', { w: 1, maxH: 0.92 }),
   F('seq-dispatch', 'SD-3: Automatic assignment and Administrator dispatch (CR-006, UC-15)', { w: 1, maxH: 0.92 }),
   F('seq-feedback', 'SD-4: Citizen gives feedback (UC-08)', { w: 1, maxH: 0.92 }),
-  LS,
   H2('Activity diagram of the complaint workflow'),
-  F('activity-lanes', 'UML activity diagram with swimlanes for the complete complaint workflow', { w: 1, maxH: 0.9 }),
-  PS,
+  F('activity-lanes-rot', 'UML activity diagram with swimlanes for the complete complaint workflow (turned sideways to fit the page)', { w: 1, maxH: 0.86 }),
   H2('State machine of the complaint status'),
   P('The status of a complaint follows the state machine below, which is enforced inside the database functions. Assigning an Officer, changing the priority and adding a progress remark leave the status unchanged but increase the version number, which we use for optimistic concurrency control.'),
   F('state', 'UML state machine of the complaint status', { w: 0.75 }),
@@ -379,7 +372,6 @@ export const blocks = [
     [0.1, 0.08, 0.04, 0.27, 0.33, 0.1, 0.08], { small: true, tiny: true }),
   H2('Acceptance testing'),
   T('Acceptance test summary', acceptance.head, acceptance.rows.map((r) => r[0].startsWith('Manual UAT') ? [r[0], 'Smoke checklist (Section 11.6)', 'S1–S3 passed on the live URL (30 Oct 2026); signed-in checks S4–S12 are run by the team before the demonstration'] : r), [0.32, 0.28, 0.4], { small: true }),
-  LS,
   H2('Defects identified and corrected'),
   P(`We recorded ${defectRows.length} defects. For each one we found the root cause, fixed it and tested it again. The most important were DEF-01, an endless retry loop when two users edited the same complaint (found by the HTTP integration test); DEF-13, complaints in departments without Officers that nobody could handle (found while using the hosted system and fixed through change request CR-006); and DEF-16 to DEF-19, layout problems such as feedback options spilling out of their boxes and the sidebar squeezing the page on tablets (found by the layout audit).`),
   T('Defect log', defects[0].head, defectRows, [0.06, 0.09, 0.1, 0.07, 0.2, 0.17, 0.21, 0.1], { small: true, tiny: true }),
@@ -388,7 +380,6 @@ export const blocks = [
     'PGlite uses fixture Auth and Storage schemas; the Storage HTTP service (actual file bytes) was not integration-tested.',
     'The Docker HTTP suite last ran on 21 October 2026, before the Sprint 4–5 SQL; the same locking pattern is covered by the database suite.',
     'We did not test with real citizens or Officers; usability was judged by the team.'),
-  PS,
 
   // 11 Deployment
   H1('Deployment'),
@@ -459,9 +450,7 @@ export const blocks = [
   H2('Threats and risk assessment'),
   P(`${threats.rows.length} threats were identified using the STRIDE categories. Likelihood (L) and impact (I) are rated from 1 (low) to 3 (high); risk = L × I. The residual risk is the rating after the implemented controls.`),
   F('trust', 'Trust boundary: every decision is made on the server side', { w: 0.62 }),
-  LS,
   T('Threats and risk assessment', threats.head, threats.rows, [0.04, 0.12, 0.25, 0.04, 0.04, 0.05, 0.36, 0.1], { small: true, tiny: true, risk: true }),
-  PS,
   H2('Security requirements'),
   T('Security requirements', secReq.head, secReq.rows, [0.08, 0.52, 0.12, 0.28], { small: true }),
   H2('Implemented security controls'),
@@ -552,9 +541,7 @@ export const blocks = [
   ], [0.16, 0.84], { small: true }),
   H2('Appendix B: Complete test cases'),
   P('Legend: + positive test, − negative test (misuse or invalid input). The actual results come from the automated runs recorded in the repository test report (docs/sdlc/07-test-report.md), and each case can be re-run with the automated test named in that report.'),
-  LS,
   ...testGroups.filter((g) => g.rows.length).map((g) => g.head.length >= 7 ? T(g.title, g.head.slice(0, 7), g.rows.map((r) => r.slice(0, 7)), [0.1, 0.08, 0.04, 0.26, 0.34, 0.1, 0.08], { small: true, tiny: true }) : T(g.title, g.head, g.rows, [0.14, 0.7, 0.16], { small: true, tiny: true })),
-  PS,
   H2('Appendix C: Repository, deployment and demonstration'),
   T('Key links and commands', ['Item', 'Value'], [
     ['Source code', meta.repo],

@@ -29,4 +29,6 @@ def phones(files, name, crop_h=1250):
     out.save(f'fig/{name}.png')
 phones(['02-citizen-overview', 'a01-citizen-feedback-form', 'menu-open'], 'shot-phones-citizen')
 phones(['14-admin-dispatch-centre', 'a05-admin-users-edit', '15-admin-analytics'], 'shot-phones-admin')
+# The wide swimlane diagram is turned sideways so it fits a portrait A4 page (lane names read normally across the top).
+Image.open('fig/activity-lanes.png').rotate(-90, expand=True).save('fig/activity-lanes-rot.png')
 print('screens cropped')
