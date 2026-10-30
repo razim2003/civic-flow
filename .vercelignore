@@ -1,0 +1,16 @@
+# Upload only what the production build needs: never local env files,
+# credentials, tooling state, test output or documentation.
+/*
+!/src
+!/public
+!/tests
+!/index.html
+!/package.json
+!/package-lock.json
+!/tsconfig.json
+!/tsconfig.app.json
+!/tsconfig.node.json
+!/vite.config.ts
+!/vitest.config.ts
+!/playwright.config.ts
+!/vercel.json
