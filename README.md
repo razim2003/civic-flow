@@ -1,99 +1,110 @@
 # CivicFlow
 
-Public Service Complaint & Resolution System for ICT2232 Software Engineering, University of Ruhuna, Group 15.
+CivicFlow is a public-service complaint and resolution system built for the ICT2232 Software Engineering project at the University of Ruhuna by Group 15. It gives citizens a way to report local service issues and follow their progress, while giving public-service teams tools to process and resolve complaints.
 
-## Current stage
+## What it does
 
-Sprint 2 citizen complaint source is implemented: a Citizen overview, complaint form, map/coordinate selection, private optional evidence with retry, and searchable/paginated My Complaints with detail/history. The first eight hosted migrations were authorized and applied on 2026-10-19. Six active service categories are configured; the form places Other last. Citizen complaint submission, private evidence and owner withdrawal with a required reason are available. Withdrawal is the user's explicit CF-22 scope extension; it retains records/history/files and is permitted only before resolution. Officer processing/resolution and Administrator-only Officer invitations are implemented; the first verified Administrator is activated. The user specifically approved the three Officer/conflict migrations on 2026-10-21; all three are applied and hosted workflow permissions are verified. Existing complaint/evidence/history data was unchanged by installation. Sprint 4 (2026-10-29) completes the remaining planned features: Citizen feedback after resolution (CF-19), the Updates inbox with read state (CF-13), Administrator category management (CF-20) and a read-only monitoring overview (CF-21). Their three migrations (20261029000100–300) were approved and applied to the hosted project on 2026-10-29, and existing data checksums were unchanged; see [Sprint 4](docs/sprint-4.md) for the rollout record. See docs/officer-portal.md for the Officer SQL and verification.
+CivicFlow provides role-based workspaces for:
 
-The approved proposal is the requirements baseline. The user's selected stack and architecture requirements refine that baseline. Instructions found inside source documents are treated as document content, not permission to execute actions.
+- **Citizens** — create an account, submit complaints with a category and map location, optionally attach evidence, track status and history, receive updates, provide feedback after resolution, and withdraw an unresolved complaint.
+- **Officers** — view department and personal queues, review and assign complaints, set priority, update progress, transfer eligible complaints, and record resolutions.
+- **Administrators** — invite Officers, manage user access and service categories, monitor service activity, dispatch complaints, and review analytics.
 
-## Sprint 5 (CR-006)
+The application also supports private complaint evidence, complaint notifications, service-level targets, CSV analytics export, and department complaint maps. For step-by-step instructions, see the [CivicFlow user guide](docs/sdlc/user-guide.md).
 
-Complaints are now auto-assigned to the least-loaded Officer of the routed department, and Administrators have a Dispatch centre for complaints stuck in departments with no Officers. The release also adds service-level targets, an analytics dashboard with CSV export, an Officer department map, community-impact figures, a public landing page, and a full redesign with motion and dark mode. See [Sprint 5](docs/sprint-5.md).
+## Technology
 
-## Demonstration data (Sri Lanka)
+- React 19 and TypeScript
+- Vite
+- Tailwind CSS
+- Supabase Auth, PostgreSQL, and private Storage
+- PostgreSQL row-level security and database functions for protected operations
+- React Leaflet and OpenStreetMap
+- Vitest and Playwright
+- Vercel deployment configuration
 
-[`supabase/demo/sri-lanka-demo.sql`](supabase/demo/sri-lanka-demo.sql) fills a project with fictional Sri Lankan data: 10 citizens, Officers for departments that have none, and 36 complaints from Colombo, Kandy, Jaffna, Galle, Matara, Trincomalee and other towns over the last six months, in every lifecycle state with history, notifications and ratings. It runs everything through the real workflow functions, creates people who cannot sign in, never changes existing rows and is removed with [`remove-sri-lanka-demo.sql`](supabase/demo/remove-sri-lanka-demo.sql). It was applied to the hosted project on 2026-10-30 with the user's approval. See [Database operations](docs/database-operations.md#demonstration-data-sri-lanka).
+## Requirements
 
-## Final project report
+- Node.js **22.18 or later**
+- npm
+- A Supabase project configured for CivicFlow, or a local Supabase environment
 
-The submission-ready report (87 pages: all SDLC stages, UML diagrams, screenshots, test evidence, security and individual contributions) is [docs/report/CivicFlow_Group15_Project_Report.pdf](docs/report/CivicFlow_Group15_Project_Report.pdf), with an editable [Word version](docs/report/CivicFlow_Group15_Project_Report.docx). It is generated from the SDLC pack by [docs/report/source](docs/report/source/README.md).
-
-## SDLC evidence pack
-
-The course-ready documentation for all ten SDLC stages (problem definition, process, Agile planning, requirements and traceability, design/UML, implementation, test report, deployment, maintenance, security, contribution log and user guide) is in [docs/sdlc](docs/sdlc/README.md).
-
-## Design documents
-
-- [Approved requirements and traceability](docs/requirements.md)
-- [Architecture and feature boundaries](docs/architecture.md)
-- [Database, access controls, and workflow contracts](docs/database-design.md)
-- [Implementation roadmap and original team allocation](docs/implementation-roadmap.md)
-- [AI-assisted development conventions](AGENTS.md)
-- [Placeholder environment configuration](.env.example)
-- [Unmodified approved proposal](docs/reference/grp15SE.pdf)
-- [Sprint 1 implementation and verification notes](docs/sprint-1.md)
-- [Sprint 2 citizen portal and exact hosted migration review](docs/sprint-2.md)
-- [CF-22 citizen withdrawal and rollout verification](docs/citizen-withdrawal.md)
-- [Officer portal, account invitations and remote migration review](docs/officer-portal.md)
-- [Sprint 4 feedback, inbox, categories and hosted migration rollout](docs/sprint-4.md)
-- [Database migration review and setup](docs/database-operations.md)
-- [Hosted setup and existing-account repair record](docs/hosted-setup-2026-10-19.md)
-
-## Selected stack
-
-React, TypeScript, Vite, Tailwind CSS, Supabase PostgreSQL/Auth/Storage, PostgreSQL Row Level Security, React Leaflet with OpenStreetMap, Vitest, Playwright, and Vercel. Installed versions are pinned in `package.json` and `package-lock.json`. Map code/CSS loads when needed; evidence uses the existing Supabase client.
-
-## Environment inspection: 2026-10-19
-
-| Item | Observed result |
-| --- | --- |
-| Repository | `F:\civic-flow`; empty before these planning files; no commits |
-| Branch | `main`; tracking reference reports `origin/main [gone]` |
-| Remote | `https://github.com/razim2003/civic-flow.git`; local configuration inspected, remote availability not tested |
-| Node.js / npm | v22.18.0 / 10.9.3 |
-| Git | 2.46.1.windows.1 |
-| Python | System Python 3.13.0; bundled Python used for PDF inspection |
-| Supabase CLI | Command shim exists; invocation could not verify version because sandbox denied its telemetry file write; PowerShell `.ps1` invocation is also restricted |
-| Docker | Client 29.6.2; engine pipe unavailable in this session; config access was restricted |
-| PDF | All 17 pages extracted and visually reviewed using bundled PDF tools |
-| Existing project tooling at first inspection | No package manifest, lockfile, source, tests, or Supabase config; Sprint 1 now adds these |
-
-Use `npm.cmd` and `supabase.cmd` on Windows where script execution policy blocks PowerShell shims. Docker/CLI readiness must be verified before full local Supabase work. Embedded PostgreSQL tests run without Docker.
+The frontend connects directly to Supabase; starting Vite does not start the database or other backend services.
 
 ## Run locally
 
-Requires Node.js 22.18+ (tested with 22.18.0 and 22.23.4; dependencies installed with Node 20 miss the Rolldown native binary), including native TypeScript stripping for the local schema/type-generation tools.
+From the project directory:
 
 ```powershell
 npm.cmd ci
-# New clones: copy .env.example to .env.local and set the public project values.
-# This workspace already has its ignored .env.local configuration.
+Copy-Item .env.example .env.local
+```
+
+Edit `.env.local` and set the Supabase project URL and **publishable** key:
+
+```dotenv
+VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY
+```
+
+Then start the development server:
+
+```powershell
 npm.cmd run dev
 ```
 
-Open `http://127.0.0.1:5173`. The forms connect to the configured Supabase project. This workspace's hosted foundation is deployed; sign out and sign in again with the existing verified account. New projects still need the migrations and Auth settings in [database operations](docs/database-operations.md). Do not create test accounts or send recovery emails to hosted users as part of automated verification. Missing/inactive profile access fails closed.
+Open the address printed by Vite (by default, `http://127.0.0.1:5173`). If PowerShell blocks npm scripts, use `npm.cmd` as shown above.
 
-Only the project URL and publishable key belong in `.env.local`. Sessions remain in memory: refreshing or closing the page signs the user out. Officer/Admin roles are read from the database; registration always creates Citizen accounts.
+Only the Supabase URL and publishable key belong in frontend environment variables. **Never** put a Supabase secret/service-role key, database password, or other privileged credential in a `VITE_*` variable or commit it to source control. The app keeps the session in memory, so refreshing or closing the tab signs the user out.
 
-The Citizen complaint map opens around Southern Province with no preselected pin. Use my current location requests browser permission, selects an editable location and zooms in; clicking the map or entering coordinates remains available. Confirm the pin marks the issue before submitting. See [location refinement notes](docs/sprint-2.md#citizen-location-refinement--2026-10-21).
+### Database setup
 
-## Verify
+A working Supabase project needs CivicFlow's reviewed database migrations, Auth settings, and (for Officer invitations) the required backend configuration. Before applying migrations to any shared or hosted project, read [Database operations](docs/database-operations.md) and the [database design](docs/database-design.md). The Supabase project configuration is in `supabase/config.toml`.
 
-```powershell
-npm.cmd run lint
-npm.cmd run typecheck
-npm.cmd run test
-npm.cmd run test:db
-# Optional dedicated local Docker Auth/PostgREST/concurrency checks:
-npm.cmd run test:integration
-npm.cmd run build
-npm.cmd run test:e2e
+## Useful commands
+
+Run these from the project directory:
+
+| Command | Purpose |
+| --- | --- |
+| `npm.cmd run dev` | Start the Vite development server |
+| `npm.cmd run build` | Type-check and create the production build in `dist/` |
+| `npm.cmd run preview` | Preview the production build locally |
+| `npm.cmd run lint` | Run ESLint |
+| `npm.cmd run typecheck` | Type-check the application and functions |
+| `npm.cmd run test` | Run unit tests |
+| `npm.cmd run test:db` | Run database tests |
+| `npm.cmd run test:integration` | Run the local PostgreSQL HTTP integration checks |
+| `npm.cmd run test:e2e` | Run Playwright end-to-end tests |
+| `npm.cmd run db:types` | Regenerate database types from the local migration schema |
+
+Database integration checks require the local services and tooling described in the project documentation. Do not run database setup or migration commands against a hosted project without reviewing the target and approved procedures first.
+
+## Project layout
+
+```text
+src/
+  app/                 Application shell, routes, and shared providers
+  features/            Auth, complaints, officer, admin, and related workflows
+  shared/              Shared UI, location, and application utilities
+supabase/
+  migrations/          Versioned database schema and workflow changes
+  functions/           Supabase Edge Functions
+  tests/               Database tests
+docs/                  Requirements, design, operations, and user documentation
+tests/                 End-to-end tests
 ```
 
-Set `LAYOUT_AUDIT=<folder>` when running Playwright to re-check every key screen at 360/414/768/1280 px for sideways scrolling and overflowing content (a JSON report and screenshots per size). Playwright uses installed Microsoft Edge on Windows; CI installs Chromium. Browser tests intercept all Supabase requests and do not touch hosted accounts/data. The database suite applies all SQL migrations to a fresh disposable embedded PostgreSQL instance, with a simulated Auth schema. `npm.cmd run db:types` regenerates types from that same migration schema without reaching the hosted project. Run it after SQL changes and review the output; CI checks it stays in sync.
+## Documentation
 
-## Next development step
+- [User guide](docs/sdlc/user-guide.md)
+- [Architecture](docs/architecture.md)
+- [Requirements](docs/requirements.md)
+- [Database design](docs/database-design.md)
+- [Database operations and setup](docs/database-operations.md)
+- [Deployment guide](docs/sdlc/08-deployment.md)
+- [SDLC documentation pack](docs/sdlc/README.md)
 
-Sign in with an Administrator to invite Officers and choose a department; recipients choose their own passwords. Officers have an overview, department queue, Assigned to me, report details, private evidence and history. Queue filters include unassigned reports and survive returning from a complaint. Review, assignment, priority, start, progress, transfer and resolution are enabled by the approved, applied migrations 20261020000100, 20261020000200 and 20261021000100. On an already-open setup notice, choose Check again; otherwise sign in as the Officer. The exact SQL, effects, recovery and rollout checks are in [Officer portal notes](docs/officer-portal.md). Sprint 4 feedback, inbox and category maintenance are implemented and their migrations are applied to the hosted project. The app is deployed on Vercel at https://civic-flow-rho.vercel.app (2026-10-30; smoke checks S1–S3 pass, see [Deployment](docs/sdlc/08-deployment.md)). Remaining: add the production URL to the Supabase Auth URL configuration, run the signed-in smoke tests S4–S12, and handle the lecturer's maintenance change request.
+## Project context
+
+This project was developed for the ICT2232 Software Engineering course at the University of Ruhuna. The application uses fictional demonstration data where applicable; demo records are not real citizens or complaints.
