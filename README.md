@@ -77,8 +77,8 @@ Run these from the project directory:
 | `npm.cmd run test:integration` | Run the local PostgreSQL HTTP integration checks |
 | `npm.cmd run test:e2e` | Run Playwright end-to-end tests |
 | `npm.cmd run db:types` | Regenerate database types from the local migration schema |
-
 Database integration checks require the local services and tooling described in the project documentation. Do not run database setup or migration commands against a hosted project without reviewing the target and approved procedures first.
+
 
 ## Project layout
 
