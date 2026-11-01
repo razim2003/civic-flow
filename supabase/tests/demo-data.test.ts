@@ -75,7 +75,9 @@ describe('Sri Lankan demo data on an empty database', () => {
     const result = await asUser(db, admin, () => db.query<{ a: { trend: { submitted: number }[]; overdue: number; resolution: { count: number; within_target: number }; satisfaction: { count: number } } }>('select public.admin_analytics() a'))
     const analytics = result.rows[0].a
     expect(analytics.trend).toHaveLength(6)
-    expect(analytics.trend.every((month) => month.submitted > 0)).toBe(true)
+    // The newest demo complaint is 12 hours old, so the current month can still be
+    // empty early on its first day; the five completed months always have data.
+    expect(analytics.trend.slice(0, 5).every((month) => month.submitted > 0)).toBe(true)
     expect(analytics.overdue).toBeGreaterThan(0)
     expect(analytics.resolution.count).toBe(21)
     expect(analytics.resolution.within_target).toBeLessThan(21)
